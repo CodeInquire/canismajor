@@ -7,6 +7,7 @@ from sys import exit
 
 # INITIALIZES PYGAME MODULE
 pygame.init()
+pygame.mixer.init()
 
 w = 800
 h = 800
@@ -20,10 +21,18 @@ pygame.display.set_caption('Canis Major')
 # CREATES CLOCK OBJECT TO SET FRAMERATE
 clock = pygame.time.Clock()
 
+
+# TEST CURSOR-VARIABLES
 system = pygame.cursors.Cursor(pygame.cursors.broken_x)
 surf = pygame.Surface((40, 40)) # you could also load an image 
-#surf.fill((120, 50, 50))        # and use that as your surface
+#surf.fill((120, 50, 50))       # and use that as your surface
 color = pygame.cursors.Cursor((20, 20), surf)
+
+
+# AUDIO
+villageSound = pygame.mixer.Sound('audio/village.mp3')
+villageSound.play(-1)
+
 
 # BACKGROUND IMAGE CLASS
 class BGI:
@@ -69,11 +78,11 @@ bg = BGI(pygame.transform.scale(pygame.image.load('graphics/test_bgi2.png'), (80
 
 
 # UPLOADED SPRITE FRAMES
-idle1, idle2 = pygame.transform.scale(pygame.image.load('graphics/idle1.png').convert_alpha(), (80,80)), pygame.transform.scale(pygame.image.load('graphics/idle2.png').convert_alpha(), (80,80))
-left1 = pygame.transform.scale(pygame.transform.flip(pygame.image.load('graphics/right1.png').convert_alpha(), True, False), (80,80))
-right1 = pygame.transform.scale(pygame.image.load('graphics/right1.png').convert_alpha(), (80,80))
-up1 = pygame.transform.scale(pygame.image.load('graphics/up1.png').convert_alpha(), (80,80))
-down1, down2, down3 = pygame.transform.scale(pygame.image.load('graphics/down1.png').convert_alpha(), (80,80)), pygame.transform.scale(pygame.image.load('graphics/down2.png').convert_alpha(), (80,80)), pygame.transform.scale(pygame.image.load('graphics/down3.png').convert_alpha(), (80,80))
+idle1, idle2 = pygame.transform.scale(pygame.image.load('graphics/idle1.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/idle2.png').convert_alpha(), (96,96))
+left1 = pygame.transform.scale(pygame.transform.flip(pygame.image.load('graphics/right1.png').convert_alpha(), True, False), (96,96))
+right1 = pygame.transform.scale(pygame.image.load('graphics/right1.png').convert_alpha(), (96,96))
+up1 = pygame.transform.scale(pygame.image.load('graphics/up1.png').convert_alpha(), (96,96))
+down1, down2, down3 = pygame.transform.scale(pygame.image.load('graphics/down1.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/down2.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/down3.png').convert_alpha(), (96,96))
 
 # SPRITES
 class Player(pygame.sprite.Sprite):
@@ -87,7 +96,7 @@ class Player(pygame.sprite.Sprite):
         self.moveUp = False    # ----
         self.moveDown = False  # ----
 
-        self.idle = [idle1,idle1,idle1,idle2,idle2,idle2]
+        self.idle = [idle1,idle1,idle1,idle1,idle1,idle1,idle1,idle1,idle1,idle1,idle1,idle1,idle1,idle1,idle1,idle2,idle2,idle2,idle2,idle2,idle2,idle2,idle2,idle2,idle2,idle2,idle2,idle2,idle2,idle2]
         self.idleIndex = 0
 
         self.runRight = [right1]
@@ -102,7 +111,7 @@ class Player(pygame.sprite.Sprite):
         self.runDown = [down1, down2, down3]
         self.downIndex = 0
 
-        self.image = self.idle[self.idleIndex] # PLAYER SURFACE / SPRITE
+        self.image = self.idle[0] # PLAYER SURFACE / SPRITE
         #self.image.fill((123,159,147)) # FILLS IMAGE WITH COLOR
         self.rect = self.image.get_rect() # GETS RECT FROM LOADED IMAGE
         self.rect.topleft = [x_pos, y_pos] # SETS RECT COORDS
@@ -115,22 +124,18 @@ class Player(pygame.sprite.Sprite):
             
         if self.moveDown and self.rect.bottom < h:
             self.image = self.runDown[0]
-            self.downIndex += 1
             self.rect.bottom += self.velocity
 
         if self.moveUp and self.rect.top > 0:
             self.image = self.runUp[0]
-            self.upIndex += 1
             self.rect.top -= self.velocity
 
         if self.moveLeft and self.rect.left > 0:
             self.image = self.runLeft[0]
-            self.leftIndex += 1
             self.rect.left -= self.velocity
 
         if self.moveRight and self.rect.right < w:
             self.image = self.runRight[0]
-            self.rightIndex += 1
             self.rect.right += self.velocity
 
     def update(self):
@@ -157,20 +162,26 @@ class NPC(pygame.sprite.Sprite):
 
     def collide(self):
         if pygame.sprite.spritecollide(self, siriusSprite, False):
-            banter.show = True
-            banter.update()
+            #banter.show = True
+            #banter.update()
+            pass
+
+    def update(self):
+        screen.blit(self.image, self.rect)
         
 
 # SPRITE CLASS INSTANCES
 siriusSprite = pygame.sprite.GroupSingle() # CREATE SPRITE GROUP
 npc_sprites = pygame.sprite.Group()
+allSprites = pygame.sprite.Group()
 
-sirius = Player(100, 100) # CREATE SPRITE
+sirius = Player(400, 600) # CREATE SPRITE
 aldhara = NPC('Aldhara', 110, 100)
 jynx = NPC('Jynx', bg.rect.w/4, bg.rect.height/4)
 
 siriusSprite.add(sirius) # ADD SPRITE
 npc_sprites.add(aldhara, jynx)
+allSprites.add(sirius, aldhara, jynx)
 
 
 # TEXT TO SCREEN CLASS
@@ -261,6 +272,9 @@ def messageToScreen():
 run = True
 while run:
     #print(pygame.time.get_ticks())
+
+
+    
     
 
     # FILLS SCREEN WITH A BACKGROUND COLOR
@@ -379,7 +393,7 @@ while run:
 
         # MOUSE EVENT DETECTION
 
-        pygame.mouse.set_cursor(system)
+        #pygame.mouse.set_cursor(system)
         mx, my = pygame.mouse.get_pos()
 
         left, middle, right = pygame.mouse.get_pressed()
@@ -413,14 +427,14 @@ while run:
 
 
     # DRAW SPRITE
-    npc_sprites.draw(bg.image)
-    siriusSprite.draw(screen)
-    sirius.update()
-    #bg.image.blits((test2.image, test2.rect) for spr in npc_sprites)
+    npc_sprites.update()
+   
+    siriusSprite.update()
 
-    sirius.idleIndex += 1
-    if sirius.idleIndex > len(sirius.idle):
-        sirius.idleIndex = 0
+    for sprite in sorted(allSprites, key = lambda sprite: sprite.rect.centery):
+        screen.blit(sprite.image, sprite.rect)
+    
+    #bg.image.blits((test2.image, test2.rect) for spr in npc_sprites)
     
     # SPRITE COLLISION FUNCTION
     aldhara.collide()
