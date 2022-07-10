@@ -1,4 +1,3 @@
-
 # IMPORTS MODULES: PYGAME, SYS, RANDOM, TIME, etc...
 import pygame
 import random as r
@@ -9,8 +8,8 @@ from sys import exit
 # INITIALIZES PYGAME MODULE
 pygame.init()
 
-w = 300
-h = 300
+w = 800
+h = 800
 
 # CREATES MAIN DISPLAY SURFACE
 screen = pygame.display.set_mode((w,h))
@@ -20,6 +19,11 @@ pygame.display.set_caption('Canis Major')
 
 # CREATES CLOCK OBJECT TO SET FRAMERATE
 clock = pygame.time.Clock()
+
+system = pygame.cursors.Cursor(pygame.cursors.broken_x)
+surf = pygame.Surface((40, 40)) # you could also load an image 
+#surf.fill((120, 50, 50))        # and use that as your surface
+color = pygame.cursors.Cursor((20, 20), surf)
 
 # BACKGROUND IMAGE CLASS
 class BGI:
@@ -36,32 +40,138 @@ class BGI:
         screen.blit(self.image, self.rect)
 
     def scroll(self):
-        if self.scrollLeft ==True:
+        if self.scrollLeft:
             if self.rect.left <= 0:
                self.rect.left += test1.velocity
             else:
                 self.rect.left = 0
                 
-        if self.scrollRight == True:
+        if self.scrollRight:
             if self.rect.right >= w:
                 self.rect.right -= test1.velocity
             else:
                 self.rect.right = w
 
-        if self.scrollUp == True:
+        if self.scrollUp:
             if self.rect.top <= 0:
                 self.rect.top += test1.velocity
             else:
                 self.rect.top = 0
 
-        if self.scrollDown == True:
+        if self.scrollDown:
             if self.rect.bottom >= h:
                 self.rect.bottom -= test1.velocity
             else:
                 self.rect.bottom = h
 
 # BGI VARIABLE / INSTANCE
-bg = BGI(pygame.image.load('graphics/bgi.png'), 0, 0)
+bg = BGI(pygame.transform.scale(pygame.image.load('graphics/test_bgi2.png'), (800,800)), 0, 0)
+
+
+# UPLOADED SPRITE FRAMES
+idle1, idle2 = pygame.transform.scale(pygame.image.load('graphics/idle1.png').convert_alpha(), (80,80)), pygame.transform.scale(pygame.image.load('graphics/idle2.png').convert_alpha(), (80,80))
+left1 = pygame.transform.scale(pygame.transform.flip(pygame.image.load('graphics/right1.png').convert_alpha(), True, False), (80,80))
+right1 = pygame.transform.scale(pygame.image.load('graphics/right1.png').convert_alpha(), (80,80))
+up1 = pygame.transform.scale(pygame.image.load('graphics/up1.png').convert_alpha(), (80,80))
+down1, down2, down3 = pygame.transform.scale(pygame.image.load('graphics/down1.png').convert_alpha(), (80,80)), pygame.transform.scale(pygame.image.load('graphics/down2.png').convert_alpha(), (80,80)), pygame.transform.scale(pygame.image.load('graphics/down3.png').convert_alpha(), (80,80))
+
+# SPRITES
+class Player(pygame.sprite.Sprite):
+
+    def __init__(self, x_pos, y_pos):
+        super().__init__() 
+        self.velocity = 1 # MOVEMENT SPEED
+        self.shift = False # FOR SPRINTING: HOLD LSHFT
+        self.moveLeft = False  # ----
+        self.moveRight = False # SETS PLAYER MOVEMENT-TOGGLE-VARIABLES
+        self.moveUp = False    # ----
+        self.moveDown = False  # ----
+
+        self.idle = [idle1,idle1,idle1,idle2,idle2,idle2]
+        self.idleIndex = 0
+
+        self.runRight = [right1]
+        self.rightIndex = 0
+
+        self.runLeft = [left1]
+        self.leftIndex = 0
+
+        self.runUp = [up1]
+        self.upIndex = 0
+
+        self.runDown = [down1, down2, down3]
+        self.downIndex = 0
+
+        self.image = self.idle[self.idleIndex] # PLAYER SURFACE / SPRITE
+        #self.image.fill((123,159,147)) # FILLS IMAGE WITH COLOR
+        self.rect = self.image.get_rect() # GETS RECT FROM LOADED IMAGE
+        self.rect.topleft = [x_pos, y_pos] # SETS RECT COORDS
+
+    def movement(self):
+        if self.shift:
+            self.velocity = 3
+        else:
+            self.velocity = 1
+            
+        if self.moveDown and self.rect.bottom < h:
+            self.image = self.runDown[0]
+            self.downIndex += 1
+            self.rect.bottom += self.velocity
+
+        if self.moveUp and self.rect.top > 0:
+            self.image = self.runUp[0]
+            self.upIndex += 1
+            self.rect.top -= self.velocity
+
+        if self.moveLeft and self.rect.left > 0:
+            self.image = self.runLeft[0]
+            self.leftIndex += 1
+            self.rect.left -= self.velocity
+
+        if self.moveRight and self.rect.right < w:
+            self.image = self.runRight[0]
+            self.rightIndex += 1
+            self.rect.right += self.velocity
+
+    def update(self):
+        self.movement()
+        screen.blit(self.image, self.rect)
+
+# --------------------------------------------------------
+
+class NPC(pygame.sprite.Sprite):
+
+    def __init__(self, name, x_pos, y_pos):
+        super().__init__()
+        self.name = name
+        self.image = pygame.Surface((32,64))
+        self.image.fill((222,54,147))
+        self.rect = self.image.get_rect(center = (x_pos, y_pos))
+        self.velocity = 1
+
+    def __repr__(self):
+        return self.name
+
+    def movement(self):
+        pass
+
+    def collide(self):
+        if pygame.sprite.spritecollide(self, siriusSprite, False):
+            banter.show = True
+            banter.update()
+        
+
+# SPRITE CLASS INSTANCES
+siriusSprite = pygame.sprite.GroupSingle() # CREATE SPRITE GROUP
+npc_sprites = pygame.sprite.Group()
+
+sirius = Player(100, 100) # CREATE SPRITE
+aldhara = NPC('Aldhara', 110, 100)
+jynx = NPC('Jynx', bg.rect.w/4, bg.rect.height/4)
+
+siriusSprite.add(sirius) # ADD SPRITE
+npc_sprites.add(aldhara, jynx)
+
 
 # TEXT TO SCREEN CLASS
 class text2screen:
@@ -77,96 +187,10 @@ class text2screen:
 
     def update(self):
         if self.show:
-            screen.blit(self.text, self.rect)
-
-
-# SETS PLAYER MOVEMENT-TOGGLE-VARIABLES
-moveLeft = False
-moveRight = False
-moveUp = False
-moveDown = False
-
-# SPRITES
-class Player(pygame.sprite.Sprite):
-
-    def __init__(self, x_pos, y_pos):
-        super().__init__()
-        self.image = pygame.Surface((30, 30)) # PLAYER SURFACE / SPRITE
-        self.image.fill((123,159,147)) # FILLS IMAGE WITH COLOR
-        self.rect = self.image.get_rect() # GETS RECT FROM LOADED IMAGE
-        self.rect.topleft = [x_pos, y_pos] # SETS RECT COORDS
-        self.velocity = 1 # MOVEMENT SPEED
-        self.shift = False # FOR SPRINTING: HOLD DOWN WHILE PRESSING ARROW KEYS
-
-    def movement(self):
-        if self.shift == True:
-            test1.velocity = 3
-        else:
-            test1.velocity = 1
-            
-        if moveDown == True:
-            self.rect.bottom += self.velocity
-
-        if moveUp == True:
-            self.rect.top -= self.velocity
-
-        if moveLeft == True:
-            self.rect.left -= self.velocity
-
-        if moveRight == True:
-            self.rect.right += self.velocity
-
-    def collision(self):
-        if self.rect.left <= 0:
-            self.rect.left = 0
-
-        if self.rect.right >= w:
-            self.rect.right = w
-
-        if self.rect.top <= 0:
-            self.rect.top = 0
-
-        if self.rect.bottom >= h:
-            self.rect.bottom = h
-
-            
-class NPC(pygame.sprite.Sprite):
-
-    def __init__(self, name, x_pos, y_pos):
-        super().__init__()
-        self.name = name
-        self.image = pygame.Surface([30,30])
-        self.image.fill((123,159,147))
-        self.rect = self.image.get_rect()
-        self.rect.center = [x_pos, y_pos]
-        self.velocity = 1
-
-    def __repr__(self):
-        return self.name
-
-    def movement(self):
-        pass
-
-    def collide(self):
-        if pygame.sprite.spritecollide(self, moving_sprites, False):
-            banter.show = True
-            banter.update()
-        else:
-            pass
-
-
-moving_sprites = pygame.sprite.Group() # CREATE SPRITE GROUP
-npc_sprites = pygame.sprite.Group()
-
-test1 = Player(100, 100) # CREATE SPRITE
-test2 = NPC('Guild Master', 200, 100)
-test3 = NPC('Jynx', 420, 200)
-
-moving_sprites.add(test1) # ADD SPRITE
-npc_sprites.add(test2, test3)
+            bg.image.blit(self.text, self.rect)
 
 # TEXT TO SCREEN INSTANCE
-banter = text2screen(test2.rect.x-10,test2.rect.y-10,'Guildmaster banter and wisdom...')
+banter = text2screen(aldhara.rect.x-10,aldhara.rect.y-10,'Guildmaster banter and wisdom...')
 
 
 menu = False
@@ -182,8 +206,6 @@ def Menu():
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    test1.rect.x += 0
-                    test1.rect.y += 0
                     print('menu exited')
                     menu = False
 
@@ -195,12 +217,12 @@ def Menu():
 
         pygame.display.update()
 
-        clock.tick(10)
+        clock.tick(60)
 
 
 fight = False
 def battle():
-    global fight
+    global fight, test3
     
     while fight:
 
@@ -229,44 +251,31 @@ def messageToScreen():
     msg = basicFont.render('This text will be some sort of dialogue...', False, (0,0,0))
     msgrect = msg.get_rect(center = (w/2,int(h/3)))
     msgBox = pygame.Rect(((msgrect.x - 3), (msgrect.y - 3),(msgrect.width + 3), (msgrect.height + 3)))
+    msgBoxFill = pygame.Rect(((msgrect.x - 3), (msgrect.y - 3),(msgrect.width + 3), (msgrect.height + 3)))
+    pygame.draw.rect(screen, (123,23,123), msgBox, 5)
+    pygame.draw.rect(screen, (234,234,234), msgBoxFill)
     screen.blit(msg, msgrect)
-    pygame.draw.rect(screen, (0,0,0), msgBox, 2)
 
 
 # MAIN GAME LOOP
 run = True
 while run:
-    print(pygame.time.get_ticks())
-
+    #print(pygame.time.get_ticks())
     
 
     # FILLS SCREEN WITH A BACKGROUND COLOR
-    screen.fill((255,0,0))
+    screen.fill((255,255,255))
+
 
     bg.update()
-    bg.scroll()
-
-    held_keys = pygame.key.get_pressed()
-
-    if held_keys[pygame.K_LEFT]: # LEFT
-       pass
-        
-    if held_keys[pygame.K_RIGHT]: # RIGHT
-        pass
-                  
-    if held_keys[pygame.K_UP]: # UP
-        pass
-       
-    if held_keys[pygame.K_DOWN]: # DOWN
-        pass
     
 
     # CHECKS FOR COLLISION BETWEEN SPRITES / GROUPS
-    if pygame.sprite.spritecollide(test1, npc_sprites, False):
+    if pygame.sprite.spritecollide(sirius, npc_sprites, False):
         pass
         #print('sprite colliding')
-        #message = True
-        #messageToScreen()
+        message = True
+        messageToScreen()
 
 
     # EVENT DETECTION LOOP
@@ -279,6 +288,27 @@ while run:
 
         # KEYBOARD EVENT DETECTION
         # KEY DOWN
+
+        held_keys = pygame.key.get_pressed() # RETURNS ALL BUTTONS PRESSED
+
+        if held_keys[pygame.K_LEFT]: # LEFT
+            #test1.moveLeft = True
+            pass
+        
+        if held_keys[pygame.K_RIGHT]: # RIGHT
+            #test1.moveRight = True
+            pass
+                  
+        if held_keys[pygame.K_UP]: # UP
+            #test1.moveUp = True
+            pass
+       
+        if held_keys[pygame.K_DOWN]: # DOWN
+            #test1.moveDown = True
+            pass
+
+# --------------------------------------------------------
+        
         if event.type == pygame.KEYDOWN:
 
             if event.key == pygame.K_ESCAPE:
@@ -287,23 +317,23 @@ while run:
 
             if event.key == pygame.K_LEFT:
                 print('Left Arrow Pressed')
-                moveLeft = True
-                bg.scrollLeft = True
+                sirius.moveLeft = True
+                #bg.scrollLeft = True
 
             if event.key == pygame.K_RIGHT:
                 print('Right Arrow Pressed')
-                moveRight = True
-                bg.scrollRight = True
+                sirius.moveRight = True
+                #bg.scrollRight = True
 
             if event.key == pygame.K_UP:
                 print('Up Arrow Pressed')
-                moveUp = True
-                bg.scrollUp = True
+                sirius.moveUp = True
+                #bg.scrollUp = True
 
             if event.key == pygame.K_DOWN:
                 print('Down Arrow Pressed')
-                moveDown = True
-                bg.scrollDown = True
+                sirius.moveDown = True
+                #bg.scrollDown = True
 
             if event.key == pygame.K_SPACE:
                 print('Space Bar Pressed')
@@ -312,34 +342,30 @@ while run:
 
             if event.key == pygame.K_LSHIFT:# IF LSHFT HELD: 'SPRINT MOVEMENT'
                 print('shift Pressed')
-                test1.shift = True
+                sirius.shift = True
 
-            if event.key == pygame.K_n:
-                if test2.rect.center == (200,100):
-                    for i in range(100):
-                        test2.rect.x += 1
 
         # KEY UP
         if event.type == pygame.KEYUP:
 
             if event.key == pygame.K_LEFT:
                 print('left arrow released')
-                moveLeft = False
+                sirius.moveLeft = False
                 bg.scrollLeft = False
 
             if event.key == pygame.K_RIGHT:
                 print('Right arrow released')
-                moveRight= False
+                sirius.moveRight= False
                 bg.scrollRight = False
 
             if event.key == pygame.K_UP:
                 print('Up arrow released')
-                moveUp = False
+                sirius.moveUp = False
                 bg.scrollUp = False
 
             if event.key == pygame.K_DOWN:
                 print('Down arrow released')
-                moveDown = False
+                sirius.moveDown = False
                 bg.scrollDown = False
 
             if event.key == pygame.K_SPACE:
@@ -348,46 +374,62 @@ while run:
 
             if event.key == pygame.K_LSHIFT:
                 print('shift released')
-                test1.shift = False
+                sirius.shift = False
 
 
         # MOUSE EVENT DETECTION
+
+        pygame.mouse.set_cursor(system)
         mx, my = pygame.mouse.get_pos()
+
+        left, middle, right = pygame.mouse.get_pressed()
+
+        rightClicking = False
+        leftCLicking = False
         
         if event.type == pygame.MOUSEBUTTONDOWN:
 
-            left, middle, right = pygame.mouse.get_pressed()
-
             if left:
-                if test2.rect.collidepoint(mx,my):
-                    print('sprite clicked')
-
-                else:
-                    print('left button clicked')
+                leftClicking = True
 
             if middle:
                 print('middle button clicked')
 
             if right:
-                print('right button clicked')
-                if test2.rect.collidepoint(mx,my):
+                rightClicking = True
+                if aldhara.rect.collidepoint(mx,my) or jynx.rect.collidepoint(mx,my):
                     if left:
-                        print('sprite clicked')
+                        print('SPECIAL')
+                    else:
+                        print('open NPC interact options')
+
+        if event.type == pygame.MOUSEBUTTONUP:
+
+            if left:
+                leftClicking = False
+
+            if right:
+                rightClicking = False
 
 
     # DRAW SPRITE
-    moving_sprites.draw(screen)
-    
-    # SPRITE MOVEMENT FUNCTION
-    test1.movement()
+    npc_sprites.draw(bg.image)
+    siriusSprite.draw(screen)
+    sirius.update()
+    #bg.image.blits((test2.image, test2.rect) for spr in npc_sprites)
+
+    sirius.idleIndex += 1
+    if sirius.idleIndex > len(sirius.idle):
+        sirius.idleIndex = 0
     
     # SPRITE COLLISION FUNCTION
-    test1.collision()
+    aldhara.collide()
+    jynx.collide()
 
-    npc_sprites.draw(screen)
-    test2.collide()
-    test3.collide()
+    bg.scroll()
+    
 # --------------------------------------------------------
+
     # UPDATES DISPLAY EACH FRAME
     pygame.display.update()
 
