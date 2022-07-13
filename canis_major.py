@@ -7,9 +7,7 @@ from sys import exit
 
 # INITIALIZES PYGAME MODULE
 pygame.init()
-
-# INITIALIZES PYGAME MIXER
-#pygame.mixer.init()
+pygame.mixer.init()
 
 w = 800
 h = 800
@@ -34,7 +32,7 @@ basicFont = pygame.font.SysFont(None, 36, italic = True)
 
 # AUDIO
 villageSound = pygame.mixer.Sound('audio/village.mp3')
-#villageSound.play(-1) # PLAYS AUDIO TRACK INFINITELY
+villageSound.play(-1)
 
 
 # BACKGROUND IMAGE CLASS
@@ -82,12 +80,14 @@ bg = BGI(pygame.transform.scale(pygame.image.load('graphics/test_bgi2.png'), (80
 
 # UPLOADED SPRITE FRAMES
 idle1, idle2 = pygame.transform.scale(pygame.image.load('graphics/idle1.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/idle2.png').convert_alpha(), (96,96))
-left1 = pygame.transform.scale(pygame.transform.flip(pygame.image.load('graphics/right1.png').convert_alpha(), True, False), (96,96))
-right1 = pygame.transform.scale(pygame.image.load('graphics/right1.png').convert_alpha(), (96,96))
-up1 = pygame.transform.scale(pygame.image.load('graphics/up1.png').convert_alpha(), (96,96))
+left1, left2 = pygame.transform.scale(pygame.transform.flip(pygame.image.load('graphics/right1.png').convert_alpha(), True, False), (96,96)), pygame.transform.scale(pygame.transform.flip(pygame.image.load('graphics/right2.png').convert_alpha(), True, False), (96,96))
+right1, right2 = pygame.transform.scale(pygame.image.load('graphics/right1.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/right2.png').convert_alpha(), (96,96))
+up1, up2 = pygame.transform.scale(pygame.image.load('graphics/up1.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/up2.png').convert_alpha(), (96,96))
 down1, down2, down3 = pygame.transform.scale(pygame.image.load('graphics/down1.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/down2.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/down3.png').convert_alpha(), (96,96))
 
-# SPRITES
+down6 = pygame.transform.scale(pygame.image.load('graphics/down6.png').convert_alpha(), (160,160))
+
+# SPRITE CLASS
 class Player(pygame.sprite.Sprite):
 
     def __init__(self, x_pos, y_pos):
@@ -180,13 +180,14 @@ allSprites = pygame.sprite.Group()
 
 sirius = Player(400, 600) # CREATE SPRITE
 aldhara = NPC('Aldhara', 333, 666)
-jynx = NPC('Jynx', 600, 330)
+jynx = NPC('Jynx', 500, 300)
+shopKeep = NPC('Item Shop Owner', 600, 600)
 
 siriusSprite.add(sirius) # ADD SPRITE
-npc_sprites.add(aldhara, jynx)
-allSprites.add(sirius, aldhara, jynx)
+npc_sprites.add(aldhara, jynx, shopKeep)
+allSprites.add(sirius, aldhara, jynx, shopKeep)
 
-
+'''
 # TEXT TO SCREEN CLASS
 class text2screen:
     def __init__(self, xPos, yPos, text):
@@ -205,7 +206,7 @@ class text2screen:
 
 # TEXT TO SCREEN INSTANCE
 banter = text2screen(aldhara.rect.x-10,aldhara.rect.y-10,'Guildmaster banter and wisdom...')
-
+'''
 
 class Button:
     def __init__(self, text, w, h, pos, textColor, rectColor):
@@ -227,12 +228,13 @@ class Button:
         if self.topRect.collidepoint(mousePos):
             print('collide point')
             self.topColor = (255,50,50)
-            #pygame.draw.rect(screen, self.topColor, self.topRect, border_radius = 12)
         else:
             self.topColor = (33,255,33)
 
 
-saveExit = Button('Save & Exit', 200, 50, (300, 500), (0,0,0), (33,255,33))
+saveExit = Button('Save & Exit', 200, 50, (500, 700), (0,0,0), (33,255,33))
+
+mapScrn = Button('Map', 200, 50, (150, 700), (0,0,0), (33,255,33))
 
 
 menu = False
@@ -245,9 +247,19 @@ def Menu():
     start = basicFont.render('Menu Screen', False, (0,0,0))
     strtrect = start.get_rect(center = (w/2,h/2))
 
+    menuPlayer = down6
+    menuPlayerRect = down6.get_rect(center = (130, 230))
+    plrBorder = pygame.Rect(menuPlayerRect.x, menuPlayerRect.y, menuPlayerRect.width, menuPlayerRect.height)
+    playerText = basicFont.render('Sirius', False, (0,0,0))
+    playerTextRect = playerText.get_rect(bottomleft = plrBorder.topleft)
+
+    itemBorder = pygame.Rect(menuPlayerRect.x*6, menuPlayerRect.y, 444, menuPlayerRect.height)
+    itemText = basicFont.render('INVENTORY', False, (213,123,213))
+    itemTextRect = itemText.get_rect(bottomleft = itemBorder.topleft)
+
     while menu:
 
-        screen.fill((212,225,155))
+        screen.fill((123,123,231))
 
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
@@ -290,10 +302,18 @@ def Menu():
             
 
         screen.blit(start, strtrect)
+        screen.blit(menuPlayer, menuPlayerRect)
+        screen.blit(itemText, itemTextRect)
+        screen.blit(playerText, playerTextRect)
 
         saveExit.draw()
+        mapScrn.draw()
+
+        pygame.draw.rect(screen, (255,255,255), plrBorder, 5)
+        pygame.draw.rect(screen, (255,255,255), itemBorder, 5)
 
         saveExit.checkClick()
+        mapScrn.checkClick()
 
         pygame.display.update()
 
@@ -342,11 +362,17 @@ run = True
 while run:
     #print(pygame.time.get_ticks())
 
+
+    
+
+
     # FILLS SCREEN WITH A BACKGROUND COLOR
     screen.fill((255,255,255))
-    
+
+
     bg.update()
     
+
     # CHECKS FOR COLLISION BETWEEN SPRITES / GROUPS
     if pygame.sprite.spritecollide(sirius, npc_sprites, False):
         pass
@@ -468,12 +494,14 @@ while run:
 
             if left:
                 leftClicking = True
+                print('left button clicked')
 
             if middle:
                 print('middle button clicked')
 
             if right:
                 rightClicking = True
+                print('right button clicked')
                 if aldhara.rect.collidepoint(mx,my) or jynx.rect.collidepoint(mx,my):
                     if left:
                         print('SPECIAL')
@@ -490,7 +518,7 @@ while run:
 
 
     # DRAW SPRITE
-    npc_sprites.update()
+    #npc_sprites.update()
    
     siriusSprite.update()
 
