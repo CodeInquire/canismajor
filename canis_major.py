@@ -27,9 +27,6 @@ surf = pygame.Surface((40, 40)) # you could also load an image
 color = pygame.cursors.Cursor((20, 20), surf)
 
 
-basicFont = pygame.font.SysFont(None, 36, italic = True)
-
-
 # AUDIO
 villageSound = pygame.mixer.Sound('audio/village.mp3')
 villageSound.play(-1)
@@ -78,20 +75,20 @@ class BGI:
 bg = BGI(pygame.transform.scale(pygame.image.load('graphics/test_bgi2.png'), (800,800)), 0, 0)
 
 
-# UPLOADED SPRITE FRAMES
-idle1, idle2 = pygame.transform.scale(pygame.image.load('graphics/idle1.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/idle2.png').convert_alpha(), (96,96))
-left1, left2 = pygame.transform.scale(pygame.transform.flip(pygame.image.load('graphics/right1.png').convert_alpha(), True, False), (96,96)), pygame.transform.scale(pygame.transform.flip(pygame.image.load('graphics/right2.png').convert_alpha(), True, False), (96,96))
-right1, right2 = pygame.transform.scale(pygame.image.load('graphics/right1.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/right2.png').convert_alpha(), (96,96))
-up1, up2 = pygame.transform.scale(pygame.image.load('graphics/up1.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/up2.png').convert_alpha(), (96,96))
-down1, down2, down3 = pygame.transform.scale(pygame.image.load('graphics/down1.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/down2.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/down3.png').convert_alpha(), (96,96))
-
-down6 = pygame.transform.scale(pygame.image.load('graphics/down6.png').convert_alpha(), (160,160))
 
 # SPRITE CLASS
 class Player(pygame.sprite.Sprite):
 
     def __init__(self, x_pos, y_pos):
-        super().__init__() 
+        super().__init__()
+
+        # SPRITE FRAMES
+        idle1, idle2 = pygame.transform.scale(pygame.image.load('graphics/idle1.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/idle2.png').convert_alpha(), (96,96))
+        left1, left2 = pygame.transform.scale(pygame.transform.flip(pygame.image.load('graphics/right1.png').convert_alpha(), True, False), (96,96)), pygame.transform.scale(pygame.transform.flip(pygame.image.load('graphics/right2.png').convert_alpha(), True, False), (96,96))
+        right1, right2 = pygame.transform.scale(pygame.image.load('graphics/right1.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/right2.png').convert_alpha(), (96,96))
+        up1, up2 = pygame.transform.scale(pygame.image.load('graphics/up1.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/up2.png').convert_alpha(), (96,96))
+        down1, down2, down3 = pygame.transform.scale(pygame.image.load('graphics/down1.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/down2.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/down3.png').convert_alpha(), (96,96))
+
         self.velocity = 1 # MOVEMENT SPEED
         self.shift = False # FOR SPRINTING: HOLD LSHFT
         self.moveLeft = False  # ----
@@ -101,20 +98,25 @@ class Player(pygame.sprite.Sprite):
 
         self.idle = [idle1,idle1,idle1,idle1,idle1,idle1,idle1,idle1,idle1,idle1,idle1,idle1,idle1,idle1,idle1,idle2,idle2,idle2,idle2,idle2,idle2,idle2,idle2,idle2,idle2,idle2,idle2,idle2,idle2,idle2]
         self.idleIndex = 0
+        self.idling = False
 
-        self.runRight = [right1]
+        self.runRight = [right1, right2]
         self.rightIndex = 0
+        self.runningRight = False
 
-        self.runLeft = [left1]
+        self.runLeft = [left1, left2]
         self.leftIndex = 0
+        self.runningLeft = False
 
-        self.runUp = [up1]
+        self.runUp = [up1, up2]
         self.upIndex = 0
+        self.runningUp = False
 
         self.runDown = [down1, down2, down3]
         self.downIndex = 0
+        self.runningDown = False
 
-        self.image = self.idle[0] # PLAYER SURFACE / SPRITE
+        self.image = self.idle[self.idleIndex] # PLAYER SURFACE / SPRITE
         #self.image.fill((123,159,147)) # FILLS IMAGE WITH COLOR
         self.rect = self.image.get_rect() # GETS RECT FROM LOADED IMAGE
         self.rect.topleft = [x_pos, y_pos] # SETS RECT COORDS
@@ -141,8 +143,17 @@ class Player(pygame.sprite.Sprite):
             self.image = self.runRight[0]
             self.rect.right += self.velocity
 
+    def animate(self):
+        if self.runningLeft and self.rect.left > 0:
+            self.image = self.runLeft[0]
+            if self.leftIndex >= len(self.runLeft):
+                self.leftIndex = 0
+            else:
+                self.leftIndex += 1
+
     def update(self):
         self.movement()
+        self.animate()
         screen.blit(self.image, self.rect)
 
 # --------------------------------------------------------
@@ -165,8 +176,6 @@ class NPC(pygame.sprite.Sprite):
 
     def collide(self):
         if pygame.sprite.spritecollide(self, siriusSprite, False):
-            #banter.show = True
-            #banter.update()
             pass
 
     def update(self):
@@ -187,29 +196,12 @@ siriusSprite.add(sirius) # ADD SPRITE
 npc_sprites.add(aldhara, jynx, shopKeep)
 allSprites.add(sirius, aldhara, jynx, shopKeep)
 
-'''
-# TEXT TO SCREEN CLASS
-class text2screen:
-    def __init__(self, xPos, yPos, text):
-        basicFont = pygame.font.SysFont(None, 21, italic = True)
-        self.text = basicFont.render(text, False, (0,0,0))
-        self.rect = (self.text.get_rect(topleft = (xPos,yPos)))
-        border = pygame.draw.rect(screen, (255,255,255), ((self.rect.x + 3), (self.rect.y + 3),(self.rect.width + 3), (self.rect.height + 3)))
-        self.show = False
-
-    def __repr__(self):
-        return self.text
-
-    def update(self):
-        if self.show:
-            bg.image.blit(self.text, self.rect)
-
-# TEXT TO SCREEN INSTANCE
-banter = text2screen(aldhara.rect.x-10,aldhara.rect.y-10,'Guildmaster banter and wisdom...')
-'''
 
 class Button:
     def __init__(self, text, w, h, pos, textColor, rectColor):
+
+        basicFont = pygame.font.SysFont(None, 36, italic = True)
+
         
         # TOP RECT
         self.topRect = pygame.Rect(pos,(w,h))
@@ -237,9 +229,9 @@ saveExit = Button('Save & Exit', 200, 50, (500, 700), (0,0,0), (33,255,33))
 mapScrn = Button('Map', 200, 50, (150, 700), (0,0,0), (33,255,33))
 
 
-menu = False
 def Menu():
-    global menu
+    
+    menu = True
 
     print('menu entered')
 
@@ -247,8 +239,9 @@ def Menu():
     start = basicFont.render('Menu Screen', False, (0,0,0))
     strtrect = start.get_rect(center = (w/2,h/2))
 
-    menuPlayer = down6
-    menuPlayerRect = down6.get_rect(center = (130, 230))
+    menuPlyr = pygame.transform.scale(pygame.image.load('graphics/down6.png').convert_alpha(), (160,160))
+    menuPlayer = menuPlyr
+    menuPlayerRect = menuPlyr.get_rect(center = (130, 230))
     plrBorder = pygame.Rect(menuPlayerRect.x, menuPlayerRect.y, menuPlayerRect.width, menuPlayerRect.height)
     playerText = basicFont.render('Sirius', False, (0,0,0))
     playerTextRect = playerText.get_rect(bottomleft = plrBorder.topleft)
@@ -320,13 +313,48 @@ def Menu():
         clock.tick(60)
 
 
-fight = False
-def battle():
-    global fight, test3
+message = False
+def messageToScreen():
+
+    basicFont = pygame.font.SysFont(None, 36, italic = True)
+
+    msg = basicFont.render('This text will be some sort of dialogue...', False, (0,0,0))
+
+    msgRect = msg.get_rect(center = (w/2,int(h/3)))
+
+    msgBox = pygame.Rect(((msgRect.x - 3),
+                          (msgRect.y - 3),
+                          (msgRect.width + 3),
+                          (msgRect.height + 3)))
     
+    msgBoxFill = pygame.Rect(((msgRect.x - 3),
+                              (msgRect.y - 3),
+                              (msgRect.width + 3),
+                              (msgRect.height + 3)))
+
+    pygame.draw.rect(screen, (123,23,123), msgBox, 5)
+    pygame.draw.rect(screen, (234,234,234), msgBoxFill)
+
+    screen.blit(msg,msgRect)
+
+
+def battle():
+
+    fight = True
     while fight:
 
-        screen.fill((155,155,155))
+        menuPlyr = pygame.transform.scale(
+            pygame.image.load('graphics/right3.png'
+                              ).convert_alpha(), (320,320))
+
+        enemy = pygame.transform.flip(
+            pygame.transform.scale(
+                pygame.image.load(
+                    'graphics/Juggler_Attack_Blue.gif'
+                    ).convert_alpha(), (320,320)), True, False)
+
+        screen.fill((123,123,123))
+
 
         for event in pygame.event.get():
 
@@ -334,27 +362,23 @@ def battle():
                 if event.key == pygame.K_ESCAPE:
                     fight = False
 
-        basicFont = pygame.font.SysFont(None, 36, italic = True)
-        start = basicFont.render('Battle Screen', False, (0,0,0))
-        strtrect = start.get_rect(center = (w/2,h/2))
 
-        screen.blit(start, strtrect)
+        basicFont = pygame.font.SysFont(None, 66, italic = True)
+
+        battle = basicFont.render('Battle Screen', False, (255,255,255))
+
+        bttlrect = battle.get_rect(center = (w/2,h/6))
+
+        screen.blit(battle, bttlrect)
+
+
+        screen.blit(menuPlyr,(w-800,h/4,10,10))
+        screen.blit(enemy, (w-300,h/4-30,10,10))
+
 
         pygame.display.update()
 
         clock.tick(120)
-
-
-message = False
-def messageToScreen():
-    basicFont = pygame.font.SysFont(None, 36, italic = True)
-    msg = basicFont.render('This text will be some sort of dialogue...', False, (0,0,0))
-    msgrect = msg.get_rect(center = (w/2,int(h/3)))
-    msgBox = pygame.Rect(((msgrect.x - 3), (msgrect.y - 3),(msgrect.width + 3), (msgrect.height + 3)))
-    msgBoxFill = pygame.Rect(((msgrect.x - 3), (msgrect.y - 3),(msgrect.width + 3), (msgrect.height + 3)))
-    pygame.draw.rect(screen, (123,23,123), msgBox, 5)
-    pygame.draw.rect(screen, (234,234,234), msgBoxFill)
-    screen.blit(msg, msgrect)
 
 
 # MAIN GAME LOOP
@@ -376,9 +400,6 @@ while run:
     # CHECKS FOR COLLISION BETWEEN SPRITES / GROUPS
     if pygame.sprite.spritecollide(sirius, npc_sprites, False):
         pass
-        #print('sprite colliding')
-        message = True
-        messageToScreen()
 
 
     # EVENT DETECTION LOOP
@@ -421,6 +442,7 @@ while run:
             if event.key == pygame.K_LEFT:
                 print('Left Arrow Pressed')
                 sirius.moveLeft = True
+                sirius.runningLeft = True
                 #bg.scrollLeft = True
 
             if event.key == pygame.K_RIGHT:
@@ -440,7 +462,6 @@ while run:
 
             if event.key == pygame.K_SPACE:
                 print('Space Bar Pressed')
-                menu = True
                 Menu()
 
             if event.key == pygame.K_LSHIFT:# IF LSHFT HELD: 'SPRINT MOVEMENT'
@@ -454,6 +475,7 @@ while run:
             if event.key == pygame.K_LEFT:
                 print('left arrow released')
                 sirius.moveLeft = False
+                sirius.runningLeft = False
                 bg.scrollLeft = False
 
             if event.key == pygame.K_RIGHT:
@@ -517,20 +539,17 @@ while run:
                 rightClicking = False
 
 
-    # DRAW SPRITE
-    #npc_sprites.update()
-   
+    # DRAW SPRITE   
     siriusSprite.update()
 
+
+    # RENDERS SPRITES IN ORDER ACCORDING TO Y-AXIS
     for sprite in sorted(allSprites, key = lambda sprite: sprite.rect.centery):
         screen.blit(sprite.image, sprite.rect)
 
     
     #bg.image.blits((test2.image, test2.rect) for spr in npc_sprites)
-    
-    # SPRITE COLLISION FUNCTION
-    aldhara.collide()
-    jynx.collide()
+
 
     #bg.scroll()
     
