@@ -29,6 +29,7 @@ color = pygame.cursors.Cursor((20, 20), surf)
 
 # AUDIO
 villageSound = pygame.mixer.Sound('audio/village.mp3')
+villageSound.set_volume(.18)
 villageSound.play(-1)
 
 
@@ -121,6 +122,23 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect() # GETS RECT FROM LOADED IMAGE
         self.rect.topleft = [x_pos, y_pos] # SETS RECT COORDS
 
+        self.stats = {
+            'name': 'Sirius',
+            'level': 1,
+            'exp': 0,
+            'health': 3,
+            'items': [],
+            'equip': {
+                'head': None,
+                'body': None,
+                'legs': None,
+                'cowl': None,
+                'wpn1': None,
+                'wpn2': None,
+                },
+            'magic': []
+            }
+
     def movement(self):
         if self.shift:
             self.velocity = 3
@@ -160,13 +178,29 @@ class Player(pygame.sprite.Sprite):
 
 class NPC(pygame.sprite.Sprite):
 
-    def __init__(self, name, x_pos, y_pos):
+    def __init__(self, name, health, image, x_pos, y_pos):
         super().__init__()
         self.name = name
-        self.image = pygame.Surface((32,64))
-        self.image.fill((222,54,147))
+        self.image = image
+        #self.image.fill((222,54,147))
         self.rect = self.image.get_rect(center = (x_pos, y_pos))
-        self.velocity = 1
+        #self.velocity = 1
+        self.stats = {
+            'name': 'Sirius',
+            'level': 1,
+            'exp': 0,
+            'health': health,
+            'items': [],
+            'equip': {
+                'head': None,
+                'body': None,
+                'legs': None,
+                'cowl': None,
+                'wpn1': None,
+                'wpn2': None,
+                },
+            'magic': []
+            }
 
     def __repr__(self):
         return self.name
@@ -188,9 +222,9 @@ npc_sprites = pygame.sprite.Group()
 allSprites = pygame.sprite.Group()
 
 sirius = Player(400, 600) # CREATE SPRITE
-aldhara = NPC('Aldhara', 333, 666)
-jynx = NPC('Jynx', 500, 300)
-shopKeep = NPC('Item Shop Owner', 600, 600)
+aldhara = NPC('Aldhara', 300, pygame.Surface((32,64)), 333, 666)
+jynx = NPC('Jynx', 50, pygame.transform.flip(pygame.transform.scale(pygame.image.load('graphics/Juggler_Attack_Blue.gif').convert_alpha(), (96,96)), True, False), 500, 300)
+shopKeep = NPC('Item Shop Owner', 30, pygame.Surface((32,64)), 600, 600)
 
 siriusSprite.add(sirius) # ADD SPRITE
 npc_sprites.add(aldhara, jynx, shopKeep)
@@ -232,6 +266,7 @@ mapScrn = Button('Map', 200, 50, (150, 700), (0,0,0), (33,255,33))
 def Menu():
     
     menu = True
+    villageSound.stop()
 
     print('menu entered')
 
@@ -258,7 +293,9 @@ def Menu():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     print('menu exited')
+                    villageSound.play(-1)
                     menu = False
+                    
             # MOUSE EVENT DETECTION
 
             #pygame.mouse.set_cursor(system)
@@ -338,45 +375,96 @@ def messageToScreen():
     screen.blit(msg,msgRect)
 
 
-def battle():
+def battle(atkr, dfndr):
+
+    basicFont = pygame.font.SysFont(None, 66, italic = True)
+    
+
+    atkrCopy = pygame.transform.scale(atkr.image, (320, 320))
+    aHealthBar = []
+    for i in range(0, atkr.stats['health']):
+        aHealthBar.append(pygame.draw.rect(screen, (50,220,50), (i + 630, 500, 5, 20)))
+
+
+    dfndrCopy = pygame.transform.scale(dfndr.image, (320, 320))
+    dHealthBar = []
+    for i in range(0, dfndr.stats['health']):
+        dHealthBar.append(pygame.draw.rect(screen, (50,220,50), (i + 100, 500, 5, 20)))
+
+
+    
+
 
     fight = True
     while fight:
 
-        menuPlyr = pygame.transform.scale(
-            pygame.image.load('graphics/right3.png'
-                              ).convert_alpha(), (320,320))
-
-        enemy = pygame.transform.flip(
-            pygame.transform.scale(
-                pygame.image.load(
-                    'graphics/Juggler_Attack_Blue.gif'
-                    ).convert_alpha(), (320,320)), True, False)
-
-        screen.fill((123,123,123))
-
+        villageSound.stop()
+        
+        screen.fill((0,0,0))
 
         for event in pygame.event.get():
 
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_ESCAPE:
+                    villageSound.play(-1)
                     fight = False
 
+            # MOUSE EVENT DETECTION
 
-        basicFont = pygame.font.SysFont(None, 66, italic = True)
+            #pygame.mouse.set_cursor(system)
+            mx, my = pygame.mouse.get_pos()
 
-        battle = basicFont.render('Battle Screen', False, (255,255,255))
+            left, middle, right = pygame.mouse.get_pressed()
 
-        bttlrect = battle.get_rect(center = (w/2,h/6))
+            rightClicking = False
+            leftCLicking = False
+            
+            if event.type == pygame.MOUSEBUTTONDOWN:
 
-        screen.blit(battle, bttlrect)
+                if left:
+                    leftClicking = True
+                    print('left button clicked')
+                    if len(dHealthBar) > 0:
+                        print('1 damage')
+                        dHealthBar.pop()
+                    else:
+                        print('battle over')
+                        fight = False
+
+                if middle:
+                    print('middle button clicked')
+
+                if right:
+                    rightClicking = True
+                    print('right button clicked')
+
+            if event.type == pygame.MOUSEBUTTONUP:
+
+                if left:
+                    leftClicking = False
+
+                if right:
+                    rightClicking = False
+
+        aHealthDisplay = basicFont.render(str(len(aHealthBar)), False, (255,255,255))
+        aHealthDisplayRect = aHealthDisplay.get_rect(center = (w/2,h/6))
+        for hp in range(len(aHealthBar)):
+            pygame.draw.rect(screen, (50,220,50), aHealthBar[hp])
+        screen.blit(aHealthDisplay, aHealthDisplayRect)
+
+        dHealthDisplay = basicFont.render(str(len(dHealthBar)), False, (255,255,255))
+        dHealthDisplayRect = dHealthDisplay.get_rect(center = (w/2,h/6))
+        for hp in range(len(dHealthBar)):
+            pygame.draw.rect(screen, (50,220,50), dHealthBar[hp])
+        screen.blit(dHealthDisplay, dHealthDisplayRect)
 
 
-        screen.blit(menuPlyr,(w-800,h/4,10,10))
-        screen.blit(enemy, (w-300,h/4-30,10,10))
+        screen.blit(dfndrCopy,(w-800,h/4,10,10))
+        screen.blit(atkrCopy, (w-300,h/4-30,10,10))
 
-
+        
         pygame.display.update()
+
 
         clock.tick(120)
 
@@ -407,8 +495,7 @@ while run:
 
         # QUIT GAME EVENT DETECTION
         if event.type == pygame.QUIT:
-            pygame.quit()
-            exit()
+            not run
 
         # KEYBOARD EVENT DETECTION
         # KEY DOWN
@@ -517,6 +604,7 @@ while run:
             if left:
                 leftClicking = True
                 print('left button clicked')
+                battle(jynx, sirius)
 
             if middle:
                 print('middle button clicked')
@@ -561,3 +649,6 @@ while run:
 
     # RESETS FRAMERATE EACH FRAME 
     clock.tick(120)
+
+pygame.quit()
+exit()
