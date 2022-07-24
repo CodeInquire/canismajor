@@ -180,7 +180,7 @@ class Player(pygame.sprite.Sprite):
             self.shouldAnimate = False
 
 
-        if self.moveDown and self.rect.bottom < h:
+        if self.moveDown and self.rect.bottom < pygame.display.get_surface().get_height():
             if (self.moveFrame >= len(self.runDown)):
                 self.moveFrame = 0
             if self.shouldAnimate:
@@ -201,7 +201,7 @@ class Player(pygame.sprite.Sprite):
                 self.image = self.runLeft[self.moveFrame]
             self.rect.left -= self.velocity
 
-        if self.moveRight and self.rect.right < w:
+        if self.moveRight and self.rect.right < pygame.display.get_surface().get_width():
             if (self.moveFrame >= len(self.runRight)):
                 self.moveFrame = 0
             if self.shouldAnimate:
