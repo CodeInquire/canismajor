@@ -117,6 +117,9 @@ class Player(pygame.sprite.Sprite):
         self.downIndex = 0
         self.runningDown = False
 
+        self.moveFrame = 0
+        self.moveFrameDown = 0
+
         self.image = self.idle[self.idleIndex] # PLAYER SURFACE / SPRITE
         #self.image.fill((123,159,147)) # FILLS IMAGE WITH COLOR
         self.rect = self.image.get_rect() # GETS RECT FROM LOADED IMAGE
@@ -138,32 +141,63 @@ class Player(pygame.sprite.Sprite):
                 },
             'magic': []
             }
+        self.walkingPace = 1000 // 7 #Higher == faster. inter-frame delay in milliseconds
+        self.runningPace = 1000 // 10
+        self.millisec_rate = self.walkingPace
+        self.last_frame_at = 0
+        self.shouldAnimate = True
 
     def movement(self):
+
         if self.shift:
             self.velocity = 3
+            self.millisec_rate = self.runningPace
         else:
             self.velocity = 1
-            
+            self.millisec_rate = self.walkingPace
+
+
+        time_now = pygame.time.get_ticks()
+        if (time_now > self.last_frame_at + self.millisec_rate):
+            self.moveFrame += 1
+            self.shouldAnimate = True
+            self.last_frame_at = time_now
+        else:
+            self.shouldAnimate = False
+
+
         if self.moveDown and self.rect.bottom < h:
-            self.image = self.runDown[0]
+            if (self.moveFrame >= len(self.runDown)):
+                self.moveFrame = 0
+            if self.shouldAnimate:
+                self.image = self.runDown[self.moveFrame]
             self.rect.bottom += self.velocity
 
         if self.moveUp and self.rect.top > 0:
-            self.image = self.runUp[0]
+            if (self.moveFrame >= len(self.runUp)):
+                self.moveFrame = 0
+            if self.shouldAnimate:
+                self.image = self.runUp[self.moveFrame]
             self.rect.top -= self.velocity
 
         if self.moveLeft and self.rect.left > 0:
-            self.image = self.runLeft[0]
+            if (self.moveFrame >= len(self.runLeft)):
+                self.moveFrame = 0
+            if self.shouldAnimate:
+                self.image = self.runLeft[self.moveFrame]
             self.rect.left -= self.velocity
 
         if self.moveRight and self.rect.right < w:
-            self.image = self.runRight[0]
+            if (self.moveFrame >= len(self.runRight)):
+                self.moveFrame = 0
+            if self.shouldAnimate:
+                self.image = self.runRight[self.moveFrame]
             self.rect.right += self.velocity
+
 
     def animate(self):
         if self.runningLeft and self.rect.left > 0:
-            self.image = self.runLeft[0]
+            # self.image = self.runLeft[self.moveFrame]
             if self.leftIndex >= len(self.runLeft):
                 self.leftIndex = 0
             else:
@@ -171,7 +205,7 @@ class Player(pygame.sprite.Sprite):
 
     def update(self):
         self.movement()
-        self.animate()
+        # self.animate()
         screen.blit(self.image, self.rect)
 
 # --------------------------------------------------------
