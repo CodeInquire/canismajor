@@ -111,7 +111,7 @@ class Player(pygame.sprite.Sprite):
         self.moveUp = False    # ----
         self.moveDown = False  # ----
 
-        self.idle = [idle1,idle1,idle1,idle1,idle1,idle1,idle1,idle1,idle1,idle1,idle1,idle1,idle1,idle1,idle1,idle2,idle2,idle2,idle2,idle2,idle2,idle2,idle2,idle2,idle2,idle2,idle2,idle2,idle2,idle2]
+        self.idle = [idle1, idle2]
         self.idleIndex = 0
         self.idling = False
 
@@ -160,8 +160,10 @@ class Player(pygame.sprite.Sprite):
         self.millisec_rate = self.walkingPace
         self.last_frame_at = 0
         self.shouldAnimate = True
-
+        self.isIdling = True
+        self.lengthBeforeIdling = 1000
     def movement(self):
+
 
         if self.shift:
             self.velocity = 3
@@ -179,13 +181,14 @@ class Player(pygame.sprite.Sprite):
         else:
             self.shouldAnimate = False
 
-
         if self.moveDown and self.rect.bottom < pygame.display.get_surface().get_height():
             if (self.moveFrame >= len(self.runDown)):
                 self.moveFrame = 0
             if self.shouldAnimate:
                 self.image = self.runDown[self.moveFrame]
             self.rect.bottom += self.velocity
+            self.isIdling = False
+
 
         if self.moveUp and self.rect.top > 0:
             if (self.moveFrame >= len(self.runUp)):
@@ -193,6 +196,8 @@ class Player(pygame.sprite.Sprite):
             if self.shouldAnimate:
                 self.image = self.runUp[self.moveFrame]
             self.rect.top -= self.velocity
+            self.isIdling = False
+
 
         if self.moveLeft and self.rect.left > 0:
             if (self.moveFrame >= len(self.runLeft)):
@@ -200,6 +205,8 @@ class Player(pygame.sprite.Sprite):
             if self.shouldAnimate:
                 self.image = self.runLeft[self.moveFrame]
             self.rect.left -= self.velocity
+            self.isIdling = False
+
 
         if self.moveRight and self.rect.right < pygame.display.get_surface().get_width():
             if (self.moveFrame >= len(self.runRight)):
@@ -207,6 +214,15 @@ class Player(pygame.sprite.Sprite):
             if self.shouldAnimate:
                 self.image = self.runRight[self.moveFrame]
             self.rect.right += self.velocity
+            self.isIdling = False
+
+        if self.isIdling:
+            if self.moveFrame >= len(self.idle):
+                self.moveFrame = 0
+            self.image = self.idle[self.moveFrame]
+
+
+
 
 
     def animate(self):

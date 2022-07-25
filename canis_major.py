@@ -605,7 +605,6 @@ def MAIN():
         if pygame.sprite.spritecollide(sirius, npc_sprites, False):
             pass
 
-
         # EVENT DETECTION LOOP
         for event in pygame.event.get():
 
@@ -617,7 +616,7 @@ def MAIN():
             # KEY DOWN
 
             held_keys = pygame.key.get_pressed() # RETURNS ALL BUTTONS PRESSED
-
+            print(held_keys)
             if held_keys[pygame.K_LEFT]: # LEFT
                 #test1.moveLeft = True
                 pass
@@ -637,28 +636,25 @@ def MAIN():
           
             if event.type == pygame.KEYDOWN:
 
+                sirius.isIdling = False
+
                 if event.key == pygame.K_ESCAPE:
                     pygame.quit()
                     exit()
 
                 if event.key == pygame.K_LEFT:
-                    print('Left Arrow Pressed')
                     sirius.moveLeft = True
 
                 if event.key == pygame.K_RIGHT:
-                    print('Right Arrow Pressed')
                     sirius.moveRight = True
 
                 if event.key == pygame.K_UP:
-                    print('Up Arrow Pressed')
                     sirius.moveUp = True
 
                 if event.key == pygame.K_DOWN:
-                    print('Down Arrow Pressed')
                     sirius.moveDown = True
 
                 if event.key == pygame.K_SPACE:
-                    print('Space Bar Pressed')
                     Menu()
 
                 if event.key == pygame.K_LSHIFT:# IF LSHFT HELD: 'SPRINT MOVEMENT'
@@ -668,7 +664,7 @@ def MAIN():
 
             # KEY UP
             if event.type == pygame.KEYUP:
-
+                sirius.isIdling = True
                 if event.key == pygame.K_LEFT:
                     print('left arrow released')
                     sirius.moveLeft = False
