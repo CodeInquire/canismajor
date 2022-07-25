@@ -719,6 +719,8 @@ def Start():
             leftClicking = True
             if STRT.clicked == True:
                 menuVibe.pause()
+                music.play(villageMusic, -1)
+                sound.play(villageSound, -1)
                 break
 
             else:
@@ -797,7 +799,7 @@ while run:
         if event.type == pygame.KEYDOWN:
 
             if event.key == pygame.K_ESCAPE:
-                Menu()
+                pass
 
             if event.key == pygame.K_LEFT:
                 print('Left Arrow Pressed')
@@ -895,7 +897,7 @@ while run:
                 rightClicking = False
 
 
-    # DRAW SPRITE   
+    # DRAW SPRITE
     siriusSprite.update()
     sirius.movement()
 
@@ -921,3 +923,6 @@ while run:
 
     # RESETS FRAMERATE EACH FRAME 
     clock.tick(60)
+
+pygame.quit()
+exit()
