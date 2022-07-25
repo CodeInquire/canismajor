@@ -141,20 +141,14 @@ class Player(pygame.sprite.Sprite):
 
         self.stats = {
             'name': 'Sirius',
-            'level': 1,
-            'exp': 0,
-            'health': 3,
-            'items': [],
-            'equip': {
-                'head': None,
-                'body': None,
-                'legs': None,
-                'cowl': None,
-                'wpn1': None,
-                'wpn2': None,
-                },
-            'magic': []
+            'level': data['lvl'],
+            'exp': data['xp'],
+            'health': data['hp'],
+            'items': data['inv'],
+            'equip': data['eqp'],
+            'magic': data['mgc']
             }
+        
         self.walkingPace = 1000 // 7 #Higher == faster. inter-frame delay in milliseconds
         self.runningPace = 1000 // 10
         self.millisec_rate = self.walkingPace
@@ -162,6 +156,7 @@ class Player(pygame.sprite.Sprite):
         self.shouldAnimate = True
         self.isIdling = True
         self.lengthBeforeIdling = 1000
+
     def movement(self):
 
 
@@ -225,13 +220,7 @@ class Player(pygame.sprite.Sprite):
 
 
 
-    def animate(self):
-        if self.runningLeft and self.rect.left > 0:
-            # self.image = self.runLeft[self.moveFrame]
-            if self.leftIndex >= len(self.runLeft):
-                self.leftIndex = 0
-            else:
-                self.leftIndex += 1
+    
 
     def update(self):
         self.movement()

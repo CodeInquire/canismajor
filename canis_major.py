@@ -57,15 +57,14 @@ battle = pygame.mixer.Channel(3)
 
 menuVibe = pygame.mixer.Channel(4)
 
-
 previous_time = time.time()
-
 
 try:
     with open('save_file.txt') as save_file:
         data= json.load(save_file)
         for entry in data.items():
             print(entry)
+
 except:
     print('No Save File Created Yet')
 
@@ -189,10 +188,158 @@ dagger = Weapon('Dagger', 'A trusty companion to any cut-throat...',pygame.Surfa
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+class Player(pygame.sprite.Sprite):
+
+    def __init__(self, x_pos, y_pos):
+        super().__init__()
+
+        # SPRITE FRAMES
+        idle1, idle2 = pygame.transform.scale(pygame.image.load('graphics/idle1.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/idle2.png').convert_alpha(), (96,96))
+        left1, left2 = pygame.transform.scale(pygame.transform.flip(pygame.image.load('graphics/right1.png').convert_alpha(), True, False), (96,96)), pygame.transform.scale(pygame.transform.flip(pygame.image.load('graphics/right2.png').convert_alpha(), True, False), (96,96))
+        right1, right2 = pygame.transform.scale(pygame.image.load('graphics/right1.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/right2.png').convert_alpha(), (96,96))
+        up1, up2 = pygame.transform.scale(pygame.image.load('graphics/up1.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/up2.png').convert_alpha(), (96,96))
+        down1, down2, down3 = pygame.transform.scale(pygame.image.load('graphics/down1.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/down2.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/down3.png').convert_alpha(), (96,96))
+
+        self.velocity = 1 # MOVEMENT SPEED
+        self.shift = False # FOR SPRINTING: HOLD LSHFT
+        self.moveLeft = False  # ----
+        self.moveRight = False # SETS PLAYER MOVEMENT-TOGGLE-VARIABLES
+        self.moveUp = False    # ----
+        self.moveDown = False  # ----
+
+        self.idle = [idle1, idle2]
+        self.idleIndex = 0
+        self.idling = False
+
+        self.runRight = [right1, right2]
+        self.rightIndex = 0
+        self.runningRight = False
+
+        self.runLeft = [left1, left2]
+        self.leftIndex = 0
+        self.runningLeft = False
+
+        self.runUp = [up1, up2]
+        self.upIndex = 0
+        self.runningUp = False
+
+        self.runDown = [down1, down2, down3]
+        self.downIndex = 0
+        self.runningDown = False
+
+        self.moveFrame = 0
+        self.moveFrameDown = 0
+
+        self.image = self.idle[self.idleIndex] # PLAYER SURFACE / SPRITE
+        #self.image.fill((123,159,147)) # FILLS IMAGE WITH COLOR
+        self.rect = self.image.get_rect() # GETS RECT FROM LOADED IMAGE
+        self.rect.topleft = [x_pos, y_pos] # SETS RECT COORDS
+
+        try:
+            self.stats = {
+                'name': 'Sirius',
+                'level': data['lvl'],
+                'exp': data['xp'],
+                'health': data['hp'],
+                'items': data['inv'],
+                'equip': data['eqp'],
+                'magic': data['mgc']
+                }
+        except:
+            self.stats = {
+                'name': 'Sirius',
+                'level': 1,
+                'exp': 0,
+                'health': 100,
+                'items': [],
+                'equip': {
+                    'head': None,
+                    'body': None,
+                    'legs': None,
+                    'cowl': None,
+                    'wpn1': None,
+                    'wpn2': None,
+                    },
+                'magic': []
+                }
+        
+        self.walkingPace = 1000 // 7 #Higher == faster. inter-frame delay in milliseconds
+        self.runningPace = 1000 // 10
+        self.millisec_rate = self.walkingPace
+        self.last_frame_at = 0
+        self.shouldAnimate = True
+        self.isIdling = True
+        self.lengthBeforeIdling = 1000
+
+    def movement(self):
+
+
+        if self.shift:
+            self.velocity = 3
+            self.millisec_rate = self.runningPace
+        else:
+            self.velocity = 1
+            self.millisec_rate = self.walkingPace
+
+
+        time_now = pygame.time.get_ticks()
+        if (time_now > self.last_frame_at + self.millisec_rate):
+            self.moveFrame += 1
+            self.shouldAnimate = True
+            self.last_frame_at = time_now
+        else:
+            self.shouldAnimate = False
+
+        if self.moveDown and self.rect.bottom < pygame.display.get_surface().get_height():
+            if (self.moveFrame >= len(self.runDown)):
+                self.moveFrame = 0
+            if self.shouldAnimate:
+                self.image = self.runDown[self.moveFrame]
+            self.rect.bottom += self.velocity
+            self.isIdling = False
+
+
+        if self.moveUp and self.rect.top > 0:
+            if (self.moveFrame >= len(self.runUp)):
+                self.moveFrame = 0
+            if self.shouldAnimate:
+                self.image = self.runUp[self.moveFrame]
+            self.rect.top -= self.velocity
+            self.isIdling = False
+
+
+        if self.moveLeft and self.rect.left > 0:
+            if (self.moveFrame >= len(self.runLeft)):
+                self.moveFrame = 0
+            if self.shouldAnimate:
+                self.image = self.runLeft[self.moveFrame]
+            self.rect.left -= self.velocity
+            self.isIdling = False
+
+
+        if self.moveRight and self.rect.right < pygame.display.get_surface().get_width():
+            if (self.moveFrame >= len(self.runRight)):
+                self.moveFrame = 0
+            if self.shouldAnimate:
+                self.image = self.runRight[self.moveFrame]
+            self.rect.right += self.velocity
+            self.isIdling = False
+
+        if self.isIdling:
+            if self.moveFrame >= len(self.idle):
+                self.moveFrame = 0
+            self.image = self.idle[self.moveFrame]
+
+    def update(self):
+        self.movement()
+        pygame.display.get_surface().blit(self.image, self.rect)
+
+
 class NPC(pygame.sprite.Sprite):
 
     def __init__(self, name, health, image, x_pos, y_pos):
         super().__init__()
+
         self.name = name
         self.image = image
         #self.image.fill((222,54,147))
@@ -325,7 +472,7 @@ def Menu():
     
     sound.pause()
     music.pause()
-    menuVibe.play(menuMusic, -1)
+    menuVibe.unpause()
 
     print('menu entered')
 
@@ -387,7 +534,7 @@ def Menu():
                         exit()
 
                     else:
-                        print(sirius.stats['equip']['wpn1'])
+                        print('nothing to interact with')
 
                 if middle:
                     print('middle button clicked')
@@ -437,6 +584,8 @@ def Battle(atkr, dfndr):
     battle.play(battleMusic, -1)
 
     basicFont = pygame.font.SysFont(None, 66, italic = True)
+
+    atkTimer = 450
     
 
     atkrCopy = pygame.transform.scale(atkr.image, (320, 320))
@@ -483,8 +632,11 @@ def Battle(atkr, dfndr):
                     leftClicking = True
                     print('left button clicked')
                     if btlAtk.clicked == True:
-                        messageToScreen('Damage dealt!', 800/2,800/2)
-                        
+                        if atkTimer <= 0:
+                            print('attack successful')
+                            atkTimer = 450
+                        else:
+                            print('wait for atk cooldown')
 
                 if middle:
                     print('middle button clicked')
@@ -527,6 +679,12 @@ def Battle(atkr, dfndr):
         btlInv.draw()
         btlInv.checkClick()
 
+        # ATTACK TIMER TO LIMIT ATK INPUT
+        atkTimer -= 1
+        debug(atkTimer)
+        if atkTimer <= 0:
+            atkTimer = 0
+
         
         pygame.display.update()
 
@@ -560,7 +718,8 @@ def Start():
         if left:
             leftClicking = True
             if STRT.clicked == True:
-                MAIN()
+                menuVibe.pause()
+                break
 
             else:
                 print('Left Button Clicked')
@@ -579,185 +738,186 @@ def Start():
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-def MAIN():
-    global previous_time
-    
-    # MAIN GAME LOOP
-    run = True
-    while run:
-
-        #print(pygame.time.get_ticks())
-
-
-        # DELTA-TIME VARIABLES
-        dt = time.time() - previous_time
-        previous_time = time.time()
-
-
-        # FILLS SCREEN WITH A BACKGROUND COLOR
-        screen.fill((255,255,255))
-
-
-        bg.update()
-        
-
-        # CHECKS FOR COLLISION BETWEEN SPRITES / GROUPS
-        if pygame.sprite.spritecollide(sirius, npc_sprites, False):
-            pass
-
-        # EVENT DETECTION LOOP
-        for event in pygame.event.get():
-
-            # QUIT GAME EVENT DETECTION
-            if event.type == pygame.QUIT:
-                run = False
-
-            # KEYBOARD EVENT DETECTION
-            # KEY DOWN
-
-            held_keys = pygame.key.get_pressed() # RETURNS ALL BUTTONS PRESSED
-            print(held_keys)
-            if held_keys[pygame.K_LEFT]: # LEFT
-                #test1.moveLeft = True
-                pass
-            
-            if held_keys[pygame.K_RIGHT]: # RIGHT
-                #test1.moveRight = True
-                pass
-                      
-            if held_keys[pygame.K_UP]: # UP
-                #test1.moveUp = True
-                pass
-           
-            if held_keys[pygame.K_DOWN]: # DOWN
-                #test1.moveDown = True
-                pass
-
-          
-            if event.type == pygame.KEYDOWN:
-
-                sirius.isIdling = False
-
-                if event.key == pygame.K_ESCAPE:
-                    pygame.quit()
-                    exit()
-
-                if event.key == pygame.K_LEFT:
-                    sirius.moveLeft = True
-
-                if event.key == pygame.K_RIGHT:
-                    sirius.moveRight = True
-
-                if event.key == pygame.K_UP:
-                    sirius.moveUp = True
-
-                if event.key == pygame.K_DOWN:
-                    sirius.moveDown = True
-
-                if event.key == pygame.K_SPACE:
-                    Menu()
-
-                if event.key == pygame.K_LSHIFT:# IF LSHFT HELD: 'SPRINT MOVEMENT'
-                    print('shift Pressed')
-                    sirius.shift = True
-
-
-            # KEY UP
-            if event.type == pygame.KEYUP:
-                sirius.isIdling = True
-                if event.key == pygame.K_LEFT:
-                    print('left arrow released')
-                    sirius.moveLeft = False
-                    bg.scrollLeft = False
-
-                if event.key == pygame.K_RIGHT:
-                    print('Right arrow released')
-                    sirius.moveRight= False
-                    bg.scrollRight = False
-
-                if event.key == pygame.K_UP:
-                    print('Up arrow released')
-                    sirius.moveUp = False
-                    bg.scrollUp = False
-
-                if event.key == pygame.K_DOWN:
-                    print('Down arrow released')
-                    sirius.moveDown = False
-                    bg.scrollDown = False
-
-                if event.key == pygame.K_SPACE:
-                    print('Space Bar Released')
-                    Menu = False
-
-                if event.key == pygame.K_LSHIFT:
-                    print('shift released')
-                    sirius.shift = False
-
-
-            # MOUSE EVENT DETECTION
-
-            #pygame.mouse.set_cursor(system)
-            mx, my = pygame.mouse.get_pos()
-
-            left, middle, right = pygame.mouse.get_pressed()
-
-            rightClicking = False
-            leftCLicking = False
-            
-            if event.type == pygame.MOUSEBUTTONDOWN:
-
-                if left:
-                    leftClicking = True
-                    print('left button clicked')
-
-                if middle:
-                    print('middle button clicked')
-
-                if right:
-                    rightClicking = True
-                    print('right button clicked')
-                    if aldhara.rect.collidepoint(mx,my):
-                        if left:
-                            print('SPECIAL')
-                        else:
-                            print('open NPC interact options')
-                    elif jynx.rect.collidepoint(mx,my):
-                        Battle(jynx, sirius)
-
-            if event.type == pygame.MOUSEBUTTONUP:
-
-                if left:
-                    leftClicking = False
-
-                if right:
-                    rightClicking = False
-
-
-        # DRAW SPRITE   
-        siriusSprite.update()
-        sirius.movement()
-
-        jynx.collide()
-
-
-        # RENDERS SPRITES IN ORDER ACCORDING TO Y-AXIS
-        allSprites.update()
-
-        for sprite in sorted(allSprites, key = lambda sprite: sprite.rect.bottom):
-            pygame.display.get_surface().blit(sprite.image, sprite.rect)
-
-        
-        #bg.scroll()
-
-
-        debug('DEMO VERSION')
-
-
-        # UPDATES DISPLAY EACH FRAME
-        pygame.display.update()
-
-
-        # RESETS FRAMERATE EACH FRAME 
-        clock.tick(60)
+# MAIN GAME LOOP
+run = True
 
 Start()
+
+while run:
+
+    #print(pygame.time.get_ticks())
+
+
+    # DELTA-TIME VARIABLES
+    dt = time.time() - previous_time
+    previous_time = time.time()
+
+
+    # FILLS SCREEN WITH A BACKGROUND COLOR
+    screen.fill((255,255,255))
+
+
+    bg.update()
+    
+
+    # CHECKS FOR COLLISION BETWEEN SPRITES / GROUPS
+    if pygame.sprite.spritecollide(sirius, npc_sprites, False):
+        pass
+
+
+    # EVENT DETECTION LOOP
+    for event in pygame.event.get():
+
+        # QUIT GAME EVENT DETECTION
+        if event.type == pygame.QUIT:
+            run = False
+
+        # KEYBOARD EVENT DETECTION
+        # KEY DOWN
+
+        held_keys = pygame.key.get_pressed() # RETURNS ALL BUTTONS PRESSED
+
+        if held_keys[pygame.K_LEFT]: # LEFT
+            #test1.moveLeft = True
+            pass
+        
+        if held_keys[pygame.K_RIGHT]: # RIGHT
+            #test1.moveRight = True
+            pass
+                  
+        if held_keys[pygame.K_UP]: # UP
+            #test1.moveUp = True
+            pass
+       
+        if held_keys[pygame.K_DOWN]: # DOWN
+            #test1.moveDown = True
+            pass
+
+      
+        if event.type == pygame.KEYDOWN:
+
+            if event.key == pygame.K_ESCAPE:
+                Menu()
+
+            if event.key == pygame.K_LEFT:
+                print('Left Arrow Pressed')
+                sirius.moveLeft = True
+
+            if event.key == pygame.K_RIGHT:
+                print('Right Arrow Pressed')
+                sirius.moveRight = True
+
+            if event.key == pygame.K_UP:
+                print('Up Arrow Pressed')
+                sirius.moveUp = True
+
+            if event.key == pygame.K_DOWN:
+                print('Down Arrow Pressed')
+                sirius.moveDown = True
+
+            if event.key == pygame.K_SPACE:
+                print('Space Bar Pressed')
+                Menu()
+
+            if event.key == pygame.K_LSHIFT:# IF LSHFT HELD: 'SPRINT MOVEMENT'
+                print('shift Pressed')
+                sirius.shift = True
+
+
+        # KEY UP
+        if event.type == pygame.KEYUP:
+
+            if event.key == pygame.K_LEFT:
+                print('left arrow released')
+                sirius.moveLeft = False
+                bg.scrollLeft = False
+
+            if event.key == pygame.K_RIGHT:
+                print('Right arrow released')
+                sirius.moveRight= False
+                bg.scrollRight = False
+
+            if event.key == pygame.K_UP:
+                print('Up arrow released')
+                sirius.moveUp = False
+                bg.scrollUp = False
+
+            if event.key == pygame.K_DOWN:
+                print('Down arrow released')
+                sirius.moveDown = False
+                bg.scrollDown = False
+
+            if event.key == pygame.K_SPACE:
+                print('Space Bar Released')
+                Menu = False
+
+            if event.key == pygame.K_LSHIFT:
+                print('shift released')
+                sirius.shift = False
+
+
+        # MOUSE EVENT DETECTION
+
+        #pygame.mouse.set_cursor(system)
+        mx, my = pygame.mouse.get_pos()
+
+        left, middle, right = pygame.mouse.get_pressed()
+
+        rightClicking = False
+        leftCLicking = False
+        
+        if event.type == pygame.MOUSEBUTTONDOWN:
+
+            if left:
+                leftClicking = True
+                print('left button clicked')
+
+            if middle:
+                print('middle button clicked')
+
+            if right:
+                rightClicking = True
+                print('right button clicked')
+                if aldhara.rect.collidepoint(mx,my):
+                    if left:
+                        print('SPECIAL')
+                    else:
+                        print('open NPC interact options')
+                elif jynx.rect.collidepoint(mx,my):
+                    Battle(jynx, sirius)
+
+        if event.type == pygame.MOUSEBUTTONUP:
+
+            if left:
+                leftClicking = False
+
+            if right:
+                rightClicking = False
+
+
+    # DRAW SPRITE   
+    siriusSprite.update()
+    sirius.movement()
+
+    jynx.collide()
+
+
+    # RENDERS SPRITES IN ORDER ACCORDING TO Y-AXIS
+    allSprites.update()
+
+    for sprite in sorted(allSprites, key = lambda sprite: sprite.rect.bottom):
+        pygame.display.get_surface().blit(sprite.image, sprite.rect)
+
+    
+    #bg.scroll()
+
+
+    debug('DEMO VERSION')
+
+
+    # UPDATES DISPLAY EACH FRAME
+    pygame.display.update()
+
+
+    # RESETS FRAMERATE EACH FRAME 
+    clock.tick(60)
