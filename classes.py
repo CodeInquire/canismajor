@@ -151,6 +151,7 @@ class Player(pygame.sprite.Sprite):
         
         self.walkingPace = 1000 // 7 #Higher == faster. inter-frame delay in milliseconds
         self.runningPace = 1000 // 10
+        self.idlingPace = 1000 // 4
         self.millisec_rate = self.walkingPace
         self.last_frame_at = 0
         self.shouldAnimate = True
@@ -167,6 +168,8 @@ class Player(pygame.sprite.Sprite):
             self.velocity = 1
             self.millisec_rate = self.walkingPace
 
+        if self.isIdling:
+            self.millisec_rate = self.idlingPace
 
         time_now = pygame.time.get_ticks()
         if (time_now > self.last_frame_at + self.millisec_rate):
@@ -211,7 +214,7 @@ class Player(pygame.sprite.Sprite):
             self.rect.right += self.velocity
             self.isIdling = False
 
-        if self.isIdling:
+        if self.isIdling and self.shouldAnimate:
             if self.moveFrame >= len(self.idle):
                 self.moveFrame = 0
             self.image = self.idle[self.moveFrame]
