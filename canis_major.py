@@ -6,7 +6,6 @@ import random as r
 from pygame.locals import *
 from sys import exit
 from debug import debug
-from classes import Player
 
 
 # INITIALIZES PYGAME MODULE
