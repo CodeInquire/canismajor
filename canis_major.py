@@ -1,8 +1,5 @@
 # IMPORTS MODULES: PYGAME, SYS, RANDOM, TIME, etc...
-import pygame
-import json
-import time
-import random as r
+import pygame, json, random, time
 from pygame.locals import *
 from sys import exit
 from debug import debug
@@ -34,13 +31,13 @@ color = pygame.cursors.Cursor((20, 20), surf)
 
 # MUSIC FILE IMPORTS
 villageSound = pygame.mixer.Sound('audio/village.mp3') # CREATES A 'SOUND' OBJECT
-villageSound.set_volume(.18) # SETS VOLUME OF SOUNS
+villageSound.set_volume(.12) # SETS VOLUME OF SOUNS
 
 villageMusic = pygame.mixer.Sound('audio/CanisMajorForestWandering.mp3')
-villageMusic.set_volume(.10)
+villageMusic.set_volume(.09)
 
 battleMusic = pygame.mixer.Sound('audio/CanisMajor - BattleJam.mp3')
-battleMusic.set_volume(.18)
+battleMusic.set_volume(.06)
 
 menuMusic = pygame.mixer.Sound('audio/menu.mp3')
 menuMusic.set_volume(.33)
@@ -56,8 +53,14 @@ battle = pygame.mixer.Channel(3)
 
 menuVibe = pygame.mixer.Channel(4)
 
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# DELTA-TIME VARIABLE
 previous_time = time.time()
 
+#------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# LOAD FUNCTION USING JSON
 try:
     with open('save_file.txt') as save_file:
         data= json.load(save_file)
@@ -112,6 +115,8 @@ bg3 = BGI(pygame.transform.scale(pygame.image.load('graphics/northManor.png'), (
 strtScrn = BGI(pygame.transform.scale(pygame.image.load('graphics/startScreen.png'), (800,800)), 0, 0)
 
 currentBackground = ''
+
+menuBGI = pygame.transform.scale(pygame.image.load('graphics/siriusDrawn.jpg'), (420, 720))
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -196,8 +201,8 @@ class Player(pygame.sprite.Sprite):
         idle1, idle2 = pygame.transform.scale(pygame.image.load('graphics/idle1.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/idle2.png').convert_alpha(), (96,96))
         left1, left2 = pygame.transform.scale(pygame.transform.flip(pygame.image.load('graphics/right1.png').convert_alpha(), True, False), (96,96)), pygame.transform.scale(pygame.transform.flip(pygame.image.load('graphics/right2.png').convert_alpha(), True, False), (96,96))
         right1, right2 = pygame.transform.scale(pygame.image.load('graphics/right1.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/right2.png').convert_alpha(), (96,96))
-        up1, up2 = pygame.transform.scale(pygame.image.load('graphics/up1.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/up2.png').convert_alpha(), (96,96))
-        down1, down2, down3 = pygame.transform.scale(pygame.image.load('graphics/down1.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/down2.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/down3.png').convert_alpha(), (96,96))
+        up1, up2, up3, up4, up5 = pygame.transform.scale(pygame.image.load('graphics/up1.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/up2.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/up3.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/up4.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/up5.png').convert_alpha(), (96,96))
+        down1, down2, down3, down4, down5, down6 = pygame.transform.scale(pygame.image.load('graphics/down1.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/down2.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/down3.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/down4.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/down5.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/down6.png').convert_alpha(), (96,96))
 
         self.velocity = 1 # MOVEMENT SPEED
         self.shift = False # FOR SPRINTING: HOLD LSHFT
@@ -218,7 +223,7 @@ class Player(pygame.sprite.Sprite):
         self.leftIndex = 0
         self.runningLeft = False
 
-        self.runUp = [up1, up2]
+        self.runUp = [up1, up2, up3]
         self.upIndex = 0
         self.runningUp = False
 
@@ -242,14 +247,15 @@ class Player(pygame.sprite.Sprite):
                 'health': data['hp'],
                 'items': data['inv'],
                 'equip': data['eqp'],
-                'magic': data['mgc']
+                'magic': data['mgc'],
+                '$$$': data['$']
                 }
         except:
             self.stats = {
                 'name': 'Sirius',
-                'level': 1,
+                'level': 3,
                 'exp': 0,
-                'health': 100,
+                'health': 99,
                 'items': [],
                 'equip': {
                     'head': None,
@@ -259,7 +265,8 @@ class Player(pygame.sprite.Sprite):
                     'wpn1': None,
                     'wpn2': None,
                     },
-                'magic': []
+                'magic': [],
+                '$$$': 6
                 }
         
         self.walkingPace = 1000 // 7 #Higher == faster. inter-frame delay in milliseconds
@@ -379,6 +386,7 @@ class NPC(pygame.sprite.Sprite):
 siriusSprite = pygame.sprite.GroupSingle() # CREATE SPRITE GROUP
 npc_sprites = pygame.sprite.Group()
 allSprites = pygame.sprite.Group()
+objectSprites = pygame.sprite.Group()
 
 sirius = Player(400, 600) # CREATE SPRITE
 aldhara = NPC('Aldhara', 300, pygame.Surface((32,64)), 333, 666)
@@ -387,6 +395,7 @@ shopKeep = NPC('Item Shop Owner', 30, pygame.Surface((32,64)), 600, 600)
 
 siriusSprite.add(sirius) # ADD SPRITE
 npc_sprites.add(aldhara, jynx, shopKeep)
+#objectSprites.add(tree1, bush1, bush1, bush2, bush2, bush3, bush3)
 allSprites.add(sirius, aldhara, jynx, shopKeep, house1, tree1,
                bush1, bush1, bush2, bush2, bush3, bush3)
 
@@ -396,7 +405,7 @@ def messageToScreen(text, xPos, yPos):
 
     basicFont = pygame.font.SysFont(None, 36, italic = True)
 
-    msg = basicFont.render(text, True, (255,255,255))
+    msg = basicFont.render(text, True, (33,33,33))
     msgRect = msg.get_rect(center = (xPos, yPos))
     msgBox = pygame.Rect(((msgRect.x - 3),
                           (msgRect.y - 3),
@@ -415,9 +424,10 @@ def messageToScreen(text, xPos, yPos):
 
 # FUNCTION TO DISPLAY STATS IN MENU SCREEN
 def displayStats():
-    messageToScreen(f'LEVEL: {sirius.stats["level"]}', 130, 345)
-    messageToScreen(f'EXPERIENCE: {sirius.stats["exp"]}', 130, 385)
-    messageToScreen(f'HP PTS: {sirius.stats["health"]}', 130, 425)
+    messageToScreen(f'LEVEL: {sirius.stats["level"]}', 130, 369)
+    messageToScreen(f'EXPERIENCE: {sirius.stats["exp"]}', 130, 408)
+    messageToScreen(f'HP: {sirius.stats["health"]}', 130, 450)
+    messageToScreen(f'Currency: {sirius.stats["$$$"]} pcs', 130, 490)
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -453,9 +463,9 @@ class Button:
             self.clicked = False
 
 
-saveExit = Button('Save & Exit', 200, 50, (500, 700), (0,0,0), (33,255,33))
+saveExit = Button('Save & Exit', 200, 50, (525, 720), (0,0,0), (33,255,33))
 
-mapScrn = Button('Map', 200, 50, (150, 700), (0,0,0), (33,255,33))
+mapScrn = Button('Map', 200, 50, (525, 666), (0,0,0), (33,255,33))
 
 btlAtk = Button('Attack!', 150, 50, (100, 600), (0,0,0), (33,255,33))
 
@@ -482,16 +492,27 @@ def Menu():
     menuPlayerRect = menuPlyr.get_rect(center = (130, 230))
 
     plrBorder = pygame.Rect(menuPlayerRect.x, menuPlayerRect.y, menuPlayerRect.width, menuPlayerRect.height)
-    playerText = basicFont.render('Sirius', False, (0,0,0))
+    playerText = basicFont.render('Sirius', True, (213,123,213))
     playerTextRect = playerText.get_rect(bottomleft = plrBorder.topleft)
 
-    itemBorder = pygame.Rect(menuPlayerRect.x*6, menuPlayerRect.y, 444, menuPlayerRect.height)
-    itemText = basicFont.render('INVENTORY', False, (213,123,213))
+    itemBorder = pygame.Rect(30, 630, 444, 150)
+    itemText = basicFont.render('INVENTORY', True, (213,123,213))
     itemTextRect = itemText.get_rect(bottomleft = itemBorder.topleft)
 
     while menu:
 
-        screen.fill((123,123,231))
+        screen.fill((245,245,245))
+
+        screen.blit(menuBGI, (400, 0, 420, 720))
+        menuBGI.set_alpha(81)
+        pygame.draw.line(screen, (0,0,0), (530,81), (369,81), 2)
+        pygame.draw.line(screen, (0,0,0), (500,150), (369,150), 2)
+        pygame.draw.line(screen, (0,0,0), (480,300), (369,300), 2)
+        pygame.draw.line(screen, (0,0,0), (540,600), (369,600), 2)
+        pygame.draw.rect(screen, (0,0,0), (270, 15, 72, 72), 2)
+        pygame.draw.rect(screen, (0,0,0), (270, 144, 72, 72), 2)
+        pygame.draw.rect(screen, (0,0,0), (270, 261, 72, 72), 2)
+        pygame.draw.rect(screen, (0,0,0), (270, 531, 72, 72), 2)
 
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
@@ -520,6 +541,7 @@ def Menu():
                         data = {
                             'lvl': sirius.stats['level'],
                             'xp': sirius.stats['exp'],
+                            '$': sirius.stats['$$$'],
                             'hp': sirius.stats['health'],
                             'mgc': sirius.stats['magic'],
                             'inv': sirius.stats['items'],
@@ -531,6 +553,9 @@ def Menu():
 
                         pygame.quit()
                         exit()
+
+                    elif mapScrn.clicked == True:
+                        messageToScreen('Navigate to MAP screen', 400, 400)
 
                     else:
                         print('nothing to interact with')
@@ -562,8 +587,8 @@ def Menu():
         saveExit.draw()
         mapScrn.draw()
 
-        pygame.draw.rect(screen, (255,255,255), plrBorder, 5)
-        pygame.draw.rect(screen, (255,255,255), itemBorder, 5)
+        pygame.draw.rect(screen, (255,255,255), plrBorder, 2)
+        pygame.draw.rect(screen, (0,0,0), itemBorder, 2)
 
         displayStats()
 
@@ -584,19 +609,21 @@ def Battle(atkr, dfndr):
 
     basicFont = pygame.font.SysFont(None, 66, italic = True)
 
-    atkTimer = 450
+    atkTimer = 333
+
+    enemyAtkTimer = 234
     
 
     atkrCopy = pygame.transform.scale(atkr.image, (320, 320))
     aHealthBar = []
     for i in range(0, atkr.stats['health']):
-        aHealthBar.append(pygame.draw.rect(screen, (50,220,50), (i + 630, 500, 5, 20)))
+        aHealthBar.append(pygame.draw.rect(screen, (255,25,25), (i + 630, 500, 5, 20)))
 
 
-    dfndrCopy = pygame.transform.scale(dfndr.image, (320, 320))
+    dfndrCopy = pygame.transform.scale(pygame.image.load('graphics/right2.png').convert_alpha(), (320, 320))
     dHealthBar = []
     for i in range(0, dfndr.stats['health']):
-        dHealthBar.append(pygame.draw.rect(screen, (50,220,50), (i + 100, 500, 5, 20)))
+        dHealthBar.append(pygame.draw.rect(screen, (255,25,25), (i + 100, 500, 5, 20)))
 
 
     fight = True
@@ -631,8 +658,15 @@ def Battle(atkr, dfndr):
                     leftClicking = True
                     print('left button clicked')
                     if btlAtk.clicked == True:
-                        if atkTimer <= 0:
-                            print('attack successful')
+                        if atkTimer <= 1:
+                            hitChance = random.randint(1,100)
+                            if hitChance >= 66:
+                                print('attack successful')
+                                #atkTimer = 450
+
+                            else:
+                                print('Attack MISSED!')
+                                #atkTimer = 540
                             atkTimer = 450
                         else:
                             print('wait for atk cooldown')
@@ -655,13 +689,13 @@ def Battle(atkr, dfndr):
         aHealthDisplay = basicFont.render(str(len(aHealthBar)), False, (255,255,255))
         aHealthDisplayRect = aHealthDisplay.get_rect(center = (w/2,h/6))
         for hp in range(len(aHealthBar)):
-            pygame.draw.rect(screen, (50,220,50), aHealthBar[hp])
+            pygame.draw.rect(screen, (255,25,25), aHealthBar[hp])
         screen.blit(aHealthDisplay, aHealthDisplayRect)
 
         dHealthDisplay = basicFont.render(str(len(dHealthBar)), False, (255,255,255))
         dHealthDisplayRect = dHealthDisplay.get_rect(center = (w/2,h/6))
         for hp in range(len(dHealthBar)):
-            pygame.draw.rect(screen, (50,220,50), dHealthBar[hp])
+            pygame.draw.rect(screen, (255,25,25), dHealthBar[hp])
         screen.blit(dHealthDisplay, dHealthDisplayRect)
 
 
@@ -680,15 +714,46 @@ def Battle(atkr, dfndr):
 
         # ATTACK TIMER TO LIMIT ATK INPUT
         atkTimer -= 1
+
         debug(atkTimer)
+
         if atkTimer <= 0:
             atkTimer = 0
+
+
+        enemyAtkTimer -= 1
+
+        messageToScreen(str(enemyAtkTimer), atkr.rect.x, atkr.rect.y-30)
+
+        if enemyAtkTimer <= 0:
+
+            choices = ['atk', 'heal', 'escape']
+
+            choice = random.choice(choices)
+
+            if choice == 'atk':
+
+                hitChance = random.randint(1, 100)
+
+                if hitChance > 66 and hitChance < 99:
+                    print(choice)
+
+                else:
+                    print(choice, 'misses')
+
+            elif choice == 'heal':
+                print(choice)
+
+            elif choice == 'escape':
+                print(choice)
+
+            enemyAtkTimer = 333
 
         
         pygame.display.update()
 
 
-        clock.tick(120)
+        clock.tick(60)
 
 def Start():
     global siriusSprite
@@ -736,6 +801,10 @@ def Start():
 
         pygame.display.update()
         clock.tick(60)
+
+
+# THIS VARIABLE WILL CONTROL WHEN THE BOSS BATTLE OPENS UP (ONCE 3 SLAIN, BOSS BATTLE, ETC)
+enemiesKilled = 0
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -800,19 +869,19 @@ while run:
             if event.key == pygame.K_ESCAPE:
                 pass
 
-            if event.key == pygame.K_LEFT:
+            if event.key == pygame.K_a or event.key == pygame.K_LEFT:
                 print('Left Arrow Pressed')
                 sirius.moveLeft = True
 
-            if event.key == pygame.K_RIGHT:
+            if event.key == pygame.K_d or event.key == pygame.K_RIGHT:
                 print('Right Arrow Pressed')
                 sirius.moveRight = True
 
-            if event.key == pygame.K_UP:
+            if event.key == pygame.K_w or event.key == pygame.K_UP:
                 print('Up Arrow Pressed')
                 sirius.moveUp = True
 
-            if event.key == pygame.K_DOWN:
+            if event.key == pygame.K_s or event.key == pygame.K_DOWN:
                 print('Down Arrow Pressed')
                 sirius.moveDown = True
 
@@ -828,22 +897,22 @@ while run:
         # KEY UP
         if event.type == pygame.KEYUP:
 
-            if event.key == pygame.K_LEFT:
+            if event.key == pygame.K_a or event.key == pygame.K_LEFT:
                 print('left arrow released')
                 sirius.moveLeft = False
                 bg.scrollLeft = False
 
-            if event.key == pygame.K_RIGHT:
+            if event.key == pygame.K_d or event.key == pygame.K_RIGHT:
                 print('Right arrow released')
                 sirius.moveRight= False
                 bg.scrollRight = False
 
-            if event.key == pygame.K_UP:
+            if event.key == pygame.K_w or event.key == pygame.K_UP:
                 print('Up arrow released')
                 sirius.moveUp = False
                 bg.scrollUp = False
 
-            if event.key == pygame.K_DOWN:
+            if event.key == pygame.K_s or event.key == pygame.K_DOWN:
                 print('Down arrow released')
                 sirius.moveDown = False
                 bg.scrollDown = False
