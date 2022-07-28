@@ -280,8 +280,6 @@ class Player(pygame.sprite.Sprite):
 
     def movement(self):
 
-
-
         if self.shift:
             self.velocity = 3
             self.millisec_rate = self.runningPace
@@ -289,6 +287,7 @@ class Player(pygame.sprite.Sprite):
             self.velocity = 1
             self.millisec_rate = self.walkingPace
 
+        # Idling check
         if not self.moveLeft and not self.moveRight and not self.moveUp and not self.moveDown:
             self.isIdling = True
             self.millisec_rate = self.idlingPace
@@ -345,6 +344,8 @@ class Player(pygame.sprite.Sprite):
         self.movement()
         pygame.display.get_surface().blit(self.image, self.rect)
 
+
+def animationSpeed(rate):
 
 class NPC(pygame.sprite.Sprite):
 
