@@ -271,13 +271,15 @@ class Player(pygame.sprite.Sprite):
         
         self.walkingPace = 1000 // 7 #Higher == faster. inter-frame delay in milliseconds
         self.runningPace = 1000 // 10
+        self.idlingPace = 1000 // 4
         self.millisec_rate = self.walkingPace
         self.last_frame_at = 0
         self.shouldAnimate = True
-        self.isIdling = True
         self.lengthBeforeIdling = 1000
+        self.isIdling = True
 
     def movement(self):
+
 
 
         if self.shift:
@@ -286,6 +288,12 @@ class Player(pygame.sprite.Sprite):
         else:
             self.velocity = 1
             self.millisec_rate = self.walkingPace
+
+        if not self.moveLeft and not self.moveRight and not self.moveUp and not self.moveDown:
+            self.isIdling = True
+            self.millisec_rate = self.idlingPace
+        else:
+            self.isIdling = False
 
 
         time_now = pygame.time.get_ticks()
@@ -302,7 +310,6 @@ class Player(pygame.sprite.Sprite):
             if self.shouldAnimate:
                 self.image = self.runDown[self.moveFrame]
             self.rect.bottom += self.velocity
-            self.isIdling = False
 
 
         if self.moveUp and self.rect.top > 0:
@@ -311,7 +318,6 @@ class Player(pygame.sprite.Sprite):
             if self.shouldAnimate:
                 self.image = self.runUp[self.moveFrame]
             self.rect.top -= self.velocity
-            self.isIdling = False
 
 
         if self.moveLeft and self.rect.left > 0:
@@ -320,7 +326,6 @@ class Player(pygame.sprite.Sprite):
             if self.shouldAnimate:
                 self.image = self.runLeft[self.moveFrame]
             self.rect.left -= self.velocity
-            self.isIdling = False
 
 
         if self.moveRight and self.rect.right < pygame.display.get_surface().get_width():
@@ -329,9 +334,9 @@ class Player(pygame.sprite.Sprite):
             if self.shouldAnimate:
                 self.image = self.runRight[self.moveFrame]
             self.rect.right += self.velocity
-            self.isIdling = False
 
-        if not self.moveLeft and not self.moveRight and not self.moveUp and not self.moveDown and self.shouldAnimate:
+        # Idling
+        if self.isIdling and self.shouldAnimate:
             if self.moveFrame >= len(self.idle):
                 self.moveFrame = 0
             self.image = self.idle[self.moveFrame]
