@@ -163,7 +163,7 @@ class Weapon(pygame.sprite.Sprite):
             }
 
     def __repr__(self):
-        return self.name
+        return self.stats['atk']
 
     def equip(self):
         if sirius.stats['items'].__contains__(self):
@@ -183,9 +183,12 @@ class Armor(pygame.sprite.Sprite):
 
         self.stats = {
             'type': type,
-            'atk': defensePower,
+            'dfn': defensePower,
             'special': special,
             }
+
+    def __repr__(self):
+        return int(self.stats['dfn'])
 
 
 dagger = Weapon('Dagger', 'A trusty companion to any cut-throat...',pygame.Surface((96,96)), 'pierce', 3, None)
@@ -511,7 +514,7 @@ def Menu():
         pygame.draw.line(screen, (0,0,0), (540,600), (369,600), 2)
         pygame.draw.rect(screen, (0,0,0), (270, 15, 72, 72), 2)
         pygame.draw.rect(screen, (0,0,0), (270, 144, 72, 72), 2)
-        pygame.draw.rect(screen, (0,0,0), (270, 261, 72, 72), 2)
+        pygame.draw.rect(screen, (0,0,0), (270, 291, 72, 72), 2)
         pygame.draw.rect(screen, (0,0,0), (270, 531, 72, 72), 2)
 
         for event in pygame.event.get():
@@ -587,7 +590,7 @@ def Menu():
         saveExit.draw()
         mapScrn.draw()
 
-        pygame.draw.rect(screen, (255,255,255), plrBorder, 2)
+        pygame.draw.rect(screen, (123,23,123), plrBorder, 2)
         pygame.draw.rect(screen, (0,0,0), itemBorder, 2)
 
         displayStats()
@@ -941,6 +944,8 @@ while run:
             if left:
                 leftClicking = True
                 print('left button clicked')
+                print(dagger)
+                print(type(dagger))
 
             if middle:
                 print('middle button clicked')
