@@ -345,7 +345,6 @@ class Player(pygame.sprite.Sprite):
         pygame.display.get_surface().blit(self.image, self.rect)
 
 
-def animationSpeed(rate):
 
 class NPC(pygame.sprite.Sprite):
 
