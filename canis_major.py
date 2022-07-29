@@ -222,8 +222,8 @@ class Player(pygame.sprite.Sprite):
 
         # SPRITE FRAMES
         idle1, idle2 = pygame.transform.scale(pygame.image.load('graphics/idle1.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/idle2.png').convert_alpha(), (96,96))
-        left1, left2 = pygame.transform.scale(pygame.transform.flip(pygame.image.load('graphics/right1.png').convert_alpha(), True, False), (96,96)), pygame.transform.scale(pygame.transform.flip(pygame.image.load('graphics/right2.png').convert_alpha(), True, False), (96,96))
-        right1, right2 = pygame.transform.scale(pygame.image.load('graphics/right1.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/right2.png').convert_alpha(), (96,96))
+        left1, left2, left3, left4, left5, left6 = pygame.transform.scale(pygame.transform.flip(pygame.image.load('graphics/right1.png').convert_alpha(), True, False), (96,96)), pygame.transform.scale(pygame.transform.flip(pygame.image.load('graphics/right2.png').convert_alpha(), True, False), (96,96)), pygame.transform.scale(pygame.transform.flip(pygame.image.load('graphics/right3.png').convert_alpha(), True, False), (96,96)), pygame.transform.scale(pygame.transform.flip(pygame.image.load('graphics/right4.png').convert_alpha(), True, False), (96,96)), pygame.transform.scale(pygame.transform.flip(pygame.image.load('graphics/right5.png').convert_alpha(), True, False), (96,96)), pygame.transform.scale(pygame.transform.flip(pygame.image.load('graphics/right6.png').convert_alpha(), True, False), (96,96))
+        right1, right2, right3, right4, right5, right6 = pygame.transform.scale(pygame.image.load('graphics/right1.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/right2.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/right3.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/right4.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/right5.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/right6.png').convert_alpha(), (96,96))
         up1, up2, up3, up4, up5 = pygame.transform.scale(pygame.image.load('graphics/up1.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/up2.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/up3.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/up4.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/up5.png').convert_alpha(), (96,96))
         down1, down2, down3, down4, down5, down6 = pygame.transform.scale(pygame.image.load('graphics/down1.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/down2.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/down3.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/down4.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/down5.png').convert_alpha(), (96,96)), pygame.transform.scale(pygame.image.load('graphics/down6.png').convert_alpha(), (96,96))
 
@@ -238,11 +238,11 @@ class Player(pygame.sprite.Sprite):
         self.idleIndex = 0
         self.idling = False
 
-        self.runRight = [right1, right2]
+        self.runRight = [right1, right2, right3, right4, right5, right6]
         self.rightIndex = 0
         self.runningRight = False
 
-        self.runLeft = [left1, left2]
+        self.runLeft = [left1, left2, left3, left4, left5, left6]
         self.leftIndex = 0
         self.runningLeft = False
 
@@ -523,6 +523,10 @@ def Menu():
     itemText = basicFont.render('INVENTORY', True, (213,123,213))
     itemTextRect = itemText.get_rect(bottomleft = itemBorder.topleft)
 
+    SET = Button('Settings', 200, 50, (525, 610), (255,255,255),(123,123,255))
+
+    messageTimer = 100
+
     while menu:
 
         screen.fill((245,245,245))
@@ -579,11 +583,7 @@ def Menu():
                         exit()
 
                     elif mapScrn.clicked == True:
-                        #messageToScreen('Navigate to MAP screen', 400, 400)
-                        dagger.equip()
-
-                    else:
-                        print('nothing to interact with')
+                        print('Navigate to Map Screen')
 
                 if middle:
                     print('middle button clicked')
@@ -604,7 +604,7 @@ def Menu():
 
                 if right:
                     rightClicking = False
-            
+
         screen.blit(menuPlayer, menuPlayerRect)
         screen.blit(itemText, itemTextRect)
         screen.blit(playerText, playerTextRect)
@@ -615,12 +615,17 @@ def Menu():
         pygame.draw.rect(screen, (123,23,123), plrBorder, 2)
         pygame.draw.rect(screen, (0,0,0), itemBorder, 2)
 
-        dagger.draw(273, 18)
+        #dagger.draw(273, 18)
 
         displayStats()
 
         saveExit.checkClick()
         mapScrn.checkClick()
+
+        SET.draw()
+        SET.checkClick()
+
+        messageTimer -= 1
 
         pygame.display.update()
 
@@ -636,7 +641,7 @@ def Battle(atkr, dfndr):
 
     basicFont = pygame.font.SysFont(None, 66, italic = True)
 
-    atkTimer = 333
+    atkTimer = 222
 
     enemyAtkTimer = 333
     
@@ -656,6 +661,8 @@ def Battle(atkr, dfndr):
     fight = True
     while fight:
 
+        atk = 10
+
         villageSound.stop()
         
         screen.fill((255,255,255))
@@ -670,8 +677,6 @@ def Battle(atkr, dfndr):
                     fight = False
 
             # MOUSE EVENT DETECTION
-
-            #pygame.mouse.set_cursor(system)
             mx, my = pygame.mouse.get_pos()
 
             left, middle, right = pygame.mouse.get_pressed()
@@ -693,8 +698,11 @@ def Battle(atkr, dfndr):
 
                             hitChance = random.randint(1,100)
 
-                            if hitChance >= 66:
+                            if hitChance >= 33:
                                 print('attack successful')
+                                for i in range(10):
+                                    aHealthBar.pop()
+                                
 
                             else:
                                 print('Attack MISSED!')
@@ -826,6 +834,7 @@ def Start():
 
             else:
                 print('Left Button Clicked')
+                leftClicking = False
 
         strtScrn.update()
 
