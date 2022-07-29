@@ -43,6 +43,10 @@ menuMusic = pygame.mixer.Sound('audio/menu.mp3')
 menuMusic.set_volume(.33)
 
 
+villageSound.set_volume(.12)
+villageMusic.set_volume(.09)
+
+
 sound = pygame.mixer.Channel(1) # CREATES MUSIC CHANNEL
 
 #music.queue() # QUEUES THE NEXT SOUND FILE
@@ -154,6 +158,7 @@ class Weapon(pygame.sprite.Sprite):
         self.name = name
         self.dscr = description
         self.image = image
+        self.image.fill((255,0,0))
         self.rect = self.image.get_rect()
 
         self.stats = {
@@ -163,13 +168,18 @@ class Weapon(pygame.sprite.Sprite):
             }
 
     def __repr__(self):
-        return self.stats['atk']
+        return self.name
+
 
     def equip(self):
         if sirius.stats['items'].__contains__(self):
-            sirius.stats['equip']['wpn1'] = self
+            #sirius.stats['equip']['wpn1'] = self
+            print('weapon equipped')
         else:
             print('You dont own that item!')
+
+    def draw(self, xPos, yPos):
+        screen.blit(self.image, (xPos, yPos, 66, 66))
 
 
 class Armor(pygame.sprite.Sprite):
@@ -188,10 +198,20 @@ class Armor(pygame.sprite.Sprite):
             }
 
     def __repr__(self):
-        return int(self.stats['dfn'])
+        return self.name
 
 
-dagger = Weapon('Dagger', 'A trusty companion to any cut-throat...',pygame.Surface((96,96)), 'pierce', 3, None)
+    def equip(self):
+        if sirius.stats['items'].__contains__(self):
+            sirius.stats['equip']['wpn1'] = self
+        else:
+            print('You dont own that item!')
+
+    def draw(self, xPos, yPos):
+        screen.blit(self.image, self.rect)
+
+
+dagger = Weapon('Dagger', 'A trusty companion to any cut-throat...',pygame.Surface((66,66)), 'Slash', 3, None)
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -479,6 +499,7 @@ btlInv = Button('Items', 150, 50, (100, 700), (0,0,0), (22,255,33))
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 def Menu():
+    global dagger
     
     menu = True
     
@@ -558,7 +579,8 @@ def Menu():
                         exit()
 
                     elif mapScrn.clicked == True:
-                        messageToScreen('Navigate to MAP screen', 400, 400)
+                        #messageToScreen('Navigate to MAP screen', 400, 400)
+                        dagger.equip()
 
                     else:
                         print('nothing to interact with')
@@ -593,6 +615,8 @@ def Menu():
         pygame.draw.rect(screen, (123,23,123), plrBorder, 2)
         pygame.draw.rect(screen, (0,0,0), itemBorder, 2)
 
+        dagger.draw(273, 18)
+
         displayStats()
 
         saveExit.checkClick()
@@ -614,7 +638,7 @@ def Battle(atkr, dfndr):
 
     atkTimer = 333
 
-    enemyAtkTimer = 234
+    enemyAtkTimer = 333
     
 
     atkrCopy = pygame.transform.scale(atkr.image, (320, 320))
@@ -658,19 +682,25 @@ def Battle(atkr, dfndr):
             if event.type == pygame.MOUSEBUTTONDOWN:
 
                 if left:
+
                     leftClicking = True
+
                     print('left button clicked')
+
                     if btlAtk.clicked == True:
+
                         if atkTimer <= 1:
+
                             hitChance = random.randint(1,100)
+
                             if hitChance >= 66:
                                 print('attack successful')
-                                #atkTimer = 450
 
                             else:
                                 print('Attack MISSED!')
-                                #atkTimer = 540
+
                             atkTimer = 450
+
                         else:
                             print('wait for atk cooldown')
 
@@ -766,6 +796,7 @@ def Start():
     menuVibe.play(menuMusic, -1)
 
     STRT = Button('Click To Begin', 200, 50, (300, 400), (255,255,255),(123,123,255))
+    SET = Button('Settings', 200, 50, (300, 500), (255,255,255),(123,123,255))
     
     start = True
     while start:
@@ -790,6 +821,9 @@ def Start():
                 sound.play(villageSound, -1)
                 break
 
+            elif SET.clicked == True:
+                SETTINGS()
+
             else:
                 print('Left Button Clicked')
 
@@ -798,9 +832,57 @@ def Start():
         STRT.draw()
         STRT.checkClick()
 
+        SET.draw()
+        SET.checkClick()
+
         sirius.image = up1
         siriusSprite.draw(screen)
         sirius.rect.center = (230, 580)
+
+        pygame.display.update()
+        clock.tick(60)
+
+def SETTINGS():
+
+    bgi = pygame.Surface((800, 800))
+    bgi.fill((133,133,133))
+    bgi.set_alpha(6)
+
+    volUp = Button('Louder', 100, 50, (300, 400), (123,123,123),(231,123,255))
+    volDown = Button('Softer', 100, 50, (300, 500), (123,123,123),(231,123,255))
+    
+    settings = True
+    while settings:
+
+        messageToScreen('Volume', 333, 475)
+
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    settings = False
+
+        left, middle, right = pygame.mouse.get_pressed()
+
+        rightClicking = False
+        leftCLicking = False
+
+        if left:
+            leftClicking = True
+            if volUp.clicked == True:
+                menuMusic.set_volume(menuMusic.get_volume()+.01)
+            elif volDown.clicked == True:
+                menuMusic.set_volume(menuMusic.get_volume()-.01)
+
+            #else:
+                #print('Left Button Clicked')
+
+        volUp.draw()
+        volUp.checkClick()
+
+        volDown.draw()
+        volDown.checkClick()
+
+        screen.blit(bgi, (0,0,800,800))
 
         pygame.display.update()
         clock.tick(60)
@@ -946,6 +1028,7 @@ while run:
                 print('left button clicked')
                 print(dagger)
                 print(type(dagger))
+                dagger.equip()
 
             if middle:
                 print('middle button clicked')
