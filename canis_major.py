@@ -158,7 +158,7 @@ class Weapon(pygame.sprite.Sprite):
         self.name = name
         self.dscr = description
         self.image = image
-        self.image.fill((255,0,0))
+        #self.image.fill((255,0,0))
         self.rect = self.image.get_rect()
 
         self.stats = {
@@ -211,7 +211,7 @@ class Armor(pygame.sprite.Sprite):
         screen.blit(self.image, self.rect)
 
 
-dagger = Weapon('Dagger', 'A trusty companion to any cut-throat...',pygame.Surface((66,66)), 'Slash', 3, None)
+dagger = Weapon('Dagger', 'A trusty companion to any cut-throat...',pygame.transform.scale(pygame.image.load('graphics/SiriusDaggers.png').convert_alpha(), (66, 66)), 'Slash', 3, None)
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -615,7 +615,7 @@ def Menu():
         pygame.draw.rect(screen, (123,23,123), plrBorder, 2)
         pygame.draw.rect(screen, (0,0,0), itemBorder, 2)
 
-        #dagger.draw(273, 18)
+        dagger.draw(273, 531)
 
         displayStats()
 
