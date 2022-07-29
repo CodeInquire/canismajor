@@ -1,6 +1,5 @@
 # IMPORTS MODULES: PYGAME, SYS, RANDOM, TIME, etc...
 import pygame, json, random, time
-from pygame.locals import *
 from sys import exit
 from debug import debug
 
@@ -133,13 +132,20 @@ class Object(pygame.sprite.Sprite):
         self.image.set_colorkey((0,0,0))
         self.rect = self.image.get_rect(bottomleft = (x_pos, y_pos))
 
-        self.hitboxRect = self.rect.inflate(-36, -36)
-        self.hitbox = pygame.Surface((self.hitboxRect.width, self.hitboxRect.height))
-        self.hitbox.fill((255,255,255))
+        self.hitboxRect = self.rect.inflate(-81,-230)
+        #self.hitbox = pygame.Surface((self.hitboxRect.width, self.hitboxRect.height))
+        #self.hitbox.fill((255,25,25))
+        
+        self.hitboxRect.bottom = self.rect.bottom
 
     def update(self):
         bg.image.blit(self.image, self.rect)
-        bg.image.blit(self.hitbox, self.hitboxRect)
+        #bg.image.blit(self.hitbox, self.hitboxRect)
+        pygame.draw.rect(screen, (255, 50, 50), self.hitboxRect)
+
+    def collide(self, player):
+        if player.rect.left == self.hitboxRect.right:
+            player.left = self.hitboxRect.right
 
 tree1 = Object(pygame.image.load('graphics/tree.png').convert(),250, 300)
 bush1 = Object(pygame.image.load('graphics/bush1.png').convert(), 123, 321)
@@ -1072,6 +1078,8 @@ while run:
     sirius.movement()
 
     jynx.collide()
+
+    tree1.collide(sirius)
 
 
     # RENDERS SPRITES IN ORDER ACCORDING TO Y-AXIS
