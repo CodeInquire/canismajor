@@ -473,7 +473,7 @@ def displayStats():
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 class Button:
-    def __init__(self, text, w, h, pos, textColor, rectColor):
+    def __init__(self, text, w, h, pos, textColor, rectColor, image = None):
 
         basicFont = pygame.font.SysFont(None, 36, italic = True)
 
@@ -486,12 +486,22 @@ class Button:
         self.textSurf = basicFont.render(text, False, textColor)
         self.textRect = self.textSurf.get_rect(center = self.topRect.center)
 
+        self.image = image
+        if self.image == None:
+            pass
+        else:
+            self.imageRect = self.image.get_rect(midbottom = self.topRect.midbottom)
 
         self.clicked = False
 
     def draw(self):
         pygame.draw.rect(screen, self.topColor, self.topRect, border_radius = 12)
         screen.blit(self.textSurf, self.textRect)
+        if self.image == None:
+            pass
+        else:
+            screen.blit(self.image, self.imageRect)
+        
 
     def checkClick(self):
         mousePos = pygame.mouse.get_pos()
@@ -504,7 +514,7 @@ class Button:
             self.clicked = False
 
 
-saveExit = Button('Save & Exit', 200, 50, (525, 720), (0,0,0), (33,255,33))
+saveExit = Button('Save & Exit', 175, 75, (525, 720), (0,0,0), (33,255,33), pygame.transform.scale(pygame.image.load('graphics/saveImage.png'), (175, 75)))
 
 mapScrn = Button('Map', 200, 50, (525, 666), (0,0,0), (33,255,33))
 
@@ -850,8 +860,8 @@ def Start():
 
     menuVibe.play(menuMusic, -1)
 
-    STRT = Button('Click To Begin', 200, 50, (300, 400), (255,255,255),(123,123,255))
-    SET = Button('Settings', 200, 50, (300, 500), (255,255,255),(123,123,255))
+    STRT = Button('Click To Begin', 250, 75, (300, 390), (255,255,255),(123,123,255), pygame.transform.scale(pygame.image.load('graphics/startImage.png'), (250, 150)))
+    SET = Button('Settings', 200, 75, (300, 500), (255,255,255),(123,123,255), pygame.transform.scale(pygame.image.load('graphics/optionsImage.png'), (250, 100)))
     
     start = True
     while start:
