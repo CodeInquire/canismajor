@@ -513,7 +513,7 @@ def Menu():
     global dagger
     
     menu = True
-    
+    game_map = False
     sound.pause()
     music.pause()
     menuVibe.unpause()
@@ -538,7 +538,7 @@ def Menu():
 
     messageTimer = 100
 
-    while menu:
+    while menu or game_map:
 
         screen.fill((245,245,245))
 
@@ -556,11 +556,15 @@ def Menu():
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
-                    print('menu exited')
-                    menuVibe.pause()
-                    sound.unpause()
-                    music.unpause()
-                    menu = False
+                    if game_map:
+                        game_map = False
+                    else:
+                        menu = False
+                        print('menu exited')
+                        menuVibe.pause()
+                        sound.unpause()
+                        music.unpause()
+                    
                     
             # MOUSE EVENT DETECTION
 
@@ -593,7 +597,8 @@ def Menu():
                         pygame.quit()
                         exit()
 
-                    elif mapScrn.clicked == True:
+                    elif mapScrn.clicked:
+                        game_map = not game_map
                         print('Navigate to Map Screen')
 
                 if middle:
@@ -607,15 +612,16 @@ def Menu():
                             print('SPECIAL')
                         else:
                             print('open NPC interact options')
-
+                
             if event.type == pygame.MOUSEBUTTONUP:
-
                 if left:
                     leftClicking = False
 
                 if right:
                     rightClicking = False
-
+                        
+        if game_map:
+            messageToScreen(f'MAP DISPLAYING', 130, 530) 
         screen.blit(menuPlayer, menuPlayerRect)
         screen.blit(itemText, itemTextRect)
         screen.blit(playerText, playerTextRect)
@@ -629,9 +635,11 @@ def Menu():
         dagger.draw(273, 531)
 
         displayStats()
+        
 
         saveExit.checkClick()
         mapScrn.checkClick()
+
 
         SET.draw()
         SET.checkClick()
