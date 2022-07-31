@@ -131,6 +131,7 @@ class Object(pygame.sprite.Sprite):
         self.image = image
         self.image.set_colorkey((0,0,0))
         self.rect = self.image.get_rect(bottomleft = (x_pos, y_pos))
+        #self.image.fill((255,255,255))
 
         self.hitboxRect = self.rect.inflate(-81,-230)
         #self.hitbox = pygame.Surface((self.hitboxRect.width, self.hitboxRect.height))
@@ -145,16 +146,18 @@ class Object(pygame.sprite.Sprite):
 
     def collide(self, player):
         if player.rect.left == self.hitboxRect.right:
-            player.left = self.hitboxRect.right
+            player.rect.left = self.hitboxRect.right
 
 tree1 = Object(pygame.image.load('graphics/tree.png').convert(),250, 300)
 bush1 = Object(pygame.image.load('graphics/bush1.png').convert(), 123, 321)
 bush2 = Object(pygame.image.load('graphics/bush2.png').convert(), 234, 543)
-bush1 = Object(pygame.image.load('graphics/bush1.png').convert(), 345, 234)
-bush2 = Object(pygame.image.load('graphics/bush2.png').convert(), 132, 643)
-bush3 = Object(pygame.image.load('graphics/bush3.png').convert(), 123, 246)
-bush3 = Object(pygame.image.load('graphics/bush3.png').convert(), 321, 234)
+bush3 = Object(pygame.image.load('graphics/bush1.png').convert(), 345, 234)
+bush4 = Object(pygame.image.load('graphics/bush2.png').convert(), 132, 643)
+bush5 = Object(pygame.image.load('graphics/bush3.png').convert(), 123, 246)
+bush6 = Object(pygame.image.load('graphics/bush3.png').convert(), 321, 234)
 house1 = Object(pygame.image.load('graphics/house.png').convert(), 432, 213)
+
+
 
 
 class Weapon(pygame.sprite.Sprite):
@@ -309,12 +312,21 @@ class Player(pygame.sprite.Sprite):
 
     def movement(self):
 
+        #objects = [tree1, bush1, bush2, bush3, bush4, bush5, bush6, house1]
+        #for obj in objects:
+            #if self.rect.colliderect(obj.hitboxRect):
+                #self.moveLeft = False  # ----
+                #self.moveRight = False # SETS PLAYER MOVEMENT-TOGGLE-VARIABLES
+                #self.moveUp = False    # ----
+                #self.moveDown = False
+
         if self.shift:
             self.velocity = 3
             self.millisec_rate = self.runningPace
         else:
             self.velocity = 1
             self.millisec_rate = self.walkingPace
+                    
 
         # Idling check
         if not self.moveLeft and not self.moveRight and not self.moveUp and not self.moveDown:
@@ -410,7 +422,7 @@ class NPC(pygame.sprite.Sprite):
 
     def collide(self):
         if pygame.sprite.spritecollide(self, siriusSprite, False):
-            sirius.stats['health'] += 1
+            messageToScreen('Testing message func...', self.rect.x, self.rect.y - 30)
 
     def update(self):
         screen.blit(self.image, self.rect)
@@ -422,16 +434,15 @@ npc_sprites = pygame.sprite.Group()
 allSprites = pygame.sprite.Group()
 objectSprites = pygame.sprite.Group()
 
-sirius = Player(400, 600) # CREATE SPRITE
+sirius = Player(0, 0) # CREATE SPRITE
 aldhara = NPC('Aldhara', 300, pygame.Surface((32,64)), 333, 666)
 jynx = NPC('Jynx', 50, pygame.transform.flip(pygame.transform.scale(pygame.image.load('graphics/Juggler_Attack_Blue.gif').convert_alpha(), (96,96)), True, False), 600, 200)
 shopKeep = NPC('Item Shop Owner', 30, pygame.Surface((32,64)), 600, 600)
 
 siriusSprite.add(sirius) # ADD SPRITE
 npc_sprites.add(aldhara, jynx, shopKeep)
-#objectSprites.add(tree1, bush1, bush1, bush2, bush2, bush3, bush3)
-allSprites.add(sirius, aldhara, jynx, shopKeep, house1, tree1,
-               bush1, bush1, bush2, bush2, bush3, bush3)
+allSprites.add(sirius, aldhara, jynx, shopKeep, house1, tree1, bush1, bush2, bush3, bush4, bush5, bush6)
+objectSprites.add(house1, tree1, bush1, bush2, bush3, bush4, bush5, bush6)
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -595,6 +606,7 @@ def Menu():
 
                     elif mapScrn.clicked == True:
                         print('Navigate to Map Screen')
+                        messageToScreen('THis is texst text', 400 , 400)
 
                 if middle:
                     print('middle button clicked')
@@ -857,7 +869,7 @@ def Start():
 
         sirius.image = up1
         siriusSprite.draw(screen)
-        sirius.rect.center = (230, 580)
+        sirius.rect.center = (333, 666)
 
         pygame.display.update()
         clock.tick(60)
@@ -1076,10 +1088,6 @@ while run:
     # DRAW SPRITE
     siriusSprite.update()
     sirius.movement()
-
-    jynx.collide()
-
-    tree1.collide(sirius)
 
 
     # RENDERS SPRITES IN ORDER ACCORDING TO Y-AXIS
