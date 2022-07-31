@@ -30,31 +30,27 @@ color = pygame.cursors.Cursor((20, 20), surf)
 
 # MUSIC FILE IMPORTS
 villageSound = pygame.mixer.Sound('audio/village.mp3') # CREATES A 'SOUND' OBJECT
-villageSound.set_volume(.12) # SETS VOLUME OF SOUNS
+villageSound.set_volume(.10) # SETS VOLUME OF SOUNS
 
 villageMusic = pygame.mixer.Sound('audio/CanisMajorForestWandering.mp3')
-villageMusic.set_volume(.09)
+villageMusic.set_volume(.07)
 
 battleMusic = pygame.mixer.Sound('audio/CanisMajor - BattleJam.mp3')
-battleMusic.set_volume(.06)
+battleMusic.set_volume(.04)
 
 menuMusic = pygame.mixer.Sound('audio/menu.mp3')
-menuMusic.set_volume(.33)
-
-
-villageSound.set_volume(.12)
-villageMusic.set_volume(.09)
+menuMusic.set_volume(.23)
 
 
 sound = pygame.mixer.Channel(1) # CREATES MUSIC CHANNEL
-
-#music.queue() # QUEUES THE NEXT SOUND FILE
 
 music = pygame.mixer.Channel(2)
 
 battle = pygame.mixer.Channel(3)
 
 menuVibe = pygame.mixer.Channel(4)
+
+#music.queue() # QUEUES THE NEXT SOUND FILE
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -520,14 +516,13 @@ btlInv = Button('Items', 150, 50, (100, 700), (0,0,0), (22,255,33))
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-def Menu():
-    global dagger
+def MenuScreen():
     
-    menu = True
-    game_map = False
+    global dagger
+
     sound.pause()
     music.pause()
-    menuVibe.unpause()
+    menuVibe.play(menuMusic, -1)
 
     print('menu entered')
 
@@ -549,7 +544,10 @@ def Menu():
 
     messageTimer = 100
 
-    while menu or game_map:
+    menu = True
+    showText = False
+
+    while menu:
 
         screen.fill((245,245,245))
 
@@ -566,10 +564,8 @@ def Menu():
 
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    if game_map:
-                        game_map = False
-                    else:
+                if event.key == pygame.K_SPACE:
+
                         menu = False
                         print('menu exited')
                         menuVibe.pause()
@@ -609,9 +605,8 @@ def Menu():
                         exit()
 
                     elif mapScrn.clicked:
-                        game_map = not game_map
+                        showText = True
                         print('Navigate to Map Screen')
-                        messageToScreen('THis is texst text', 400 , 400)
 
                 if middle:
                     print('middle button clicked')
@@ -632,8 +627,20 @@ def Menu():
                 if right:
                     rightClicking = False
                         
-        if game_map:
-            messageToScreen(f'MAP DISPLAYING', 130, 530) 
+
+        if showText == True:######## PUT INTO SINGLE MULTI-USE FUNCTION
+            
+            if messageTimer >= 0:
+                messageToScreen(f'Showing Text', 400, 400)
+
+                messageTimer -= 1
+                debug(messageTimer)
+                
+            if messageTimer <= 0:
+                messageTimer = 100
+                showText = False
+        
+
         screen.blit(menuPlayer, menuPlayerRect)
         screen.blit(itemText, itemTextRect)
         screen.blit(playerText, playerTextRect)
@@ -644,7 +651,7 @@ def Menu():
         pygame.draw.rect(screen, (123,23,123), plrBorder, 2)
         pygame.draw.rect(screen, (0,0,0), itemBorder, 2)
 
-        dagger.draw(273, 531)
+        dagger.draw(273, 290)
 
         displayStats()
         
@@ -656,7 +663,6 @@ def Menu():
         SET.draw()
         SET.checkClick()
 
-        messageTimer -= 1
 
         pygame.display.update()
 
@@ -671,10 +677,6 @@ def Battle(atkr, dfndr):
     battle.play(battleMusic, -1)
 
     basicFont = pygame.font.SysFont(None, 66, italic = True)
-
-    atkTimer = 222
-
-    enemyAtkTimer = 333
     
 
     atkrCopy = pygame.transform.scale(atkr.image, (320, 320))
@@ -689,6 +691,14 @@ def Battle(atkr, dfndr):
         dHealthBar.append(pygame.draw.rect(screen, (255,25,25), (i + 100, 500, 5, 20)))
 
 
+    dfndrTimer = 222
+
+    atkrTimer = 333
+
+    messageTimer = 300
+
+
+    dfndrText = False
     fight = True
     while fight:
 
@@ -725,23 +735,39 @@ def Battle(atkr, dfndr):
 
                     if btlAtk.clicked == True:
 
-                        if atkTimer <= 1:
+                        if dfndrTimer <= 0:
 
                             hitChance = random.randint(1,100)
-
                             if hitChance >= 33:
+                                dfndrText = True
                                 print('attack successful')
                                 for i in range(10):
                                     aHealthBar.pop()
-                                
 
                             else:
                                 print('Attack MISSED!')
 
-                            atkTimer = 450
+                            dfndrTimer = 450
+
+                            if atkrTimer <= 0:
+                                choices = ['atk', 'heal', 'escape']
+                                choice = random.choice(choices)
+                                if choice == 'atk':
+                                    hitChance = random.randint(1, 100)
+                                    if hitChance > 66 and hitChance < 99:
+                                        print(choice)
+                                    else:
+                                        print(choice, 'misses')
+                                elif choice == 'heal':
+                                    print(choice)
+                                elif choice == 'escape':
+                                    print(choice)
+
+                            atkrTimer = 333
 
                         else:
                             print('wait for atk cooldown')
+
 
                 if middle:
                     print('middle button clicked')
@@ -757,6 +783,20 @@ def Battle(atkr, dfndr):
 
                 if right:
                     rightClicking = False
+
+
+        if dfndrText == True:######## PUT INTO SINGLE MULTI-USE FUNCTION
+
+            if messageTimer >= 0:
+                messageToScreen(f'Showing Text', 400, 400)
+
+            else:
+                messageTimer = 300
+                dfndrText = False
+
+            messageTimer -= 1
+            debug(messageTimer)
+
 
         aHealthDisplay = basicFont.render(str(len(aHealthBar)), False, (255,255,255))
         aHealthDisplayRect = aHealthDisplay.get_rect(center = (w/2,h/6))
@@ -784,46 +824,22 @@ def Battle(atkr, dfndr):
         btlInv.draw()
         btlInv.checkClick()
 
-        # ATTACK TIMER TO LIMIT ATK INPUT
-        atkTimer -= 1
 
-        debug(atkTimer)
+        # ATTACK TIMER TO LIMIT PLAYER ATK INPUT
+        dfndrTimer -= 1
+        debug(dfndrTimer)
+        if dfndrTimer <= 0:
+            dfndrTimer = 0
 
-        if atkTimer <= 0:
-            atkTimer = 0
+
+        # ENEMY ATTACK LOGIC
+        atkrTimer -= 1
+        messageToScreen(str(atkrTimer), atkr.rect.x, atkr.rect.y-30)
+        if atkrTimer <= 0:
+            atkrTimer = 0
 
 
-        enemyAtkTimer -= 1
-
-        messageToScreen(str(enemyAtkTimer), atkr.rect.x, atkr.rect.y-30)
-
-        if enemyAtkTimer <= 0:
-
-            choices = ['atk', 'heal', 'escape']
-
-            choice = random.choice(choices)
-
-            if choice == 'atk':
-
-                hitChance = random.randint(1, 100)
-
-                if hitChance > 66 and hitChance < 99:
-                    print(choice)
-
-                else:
-                    print(choice, 'misses')
-
-            elif choice == 'heal':
-                print(choice)
-
-            elif choice == 'escape':
-                print(choice)
-
-            enemyAtkTimer = 333
-
-        
         pygame.display.update()
-
 
         clock.tick(60)
 
@@ -855,7 +871,7 @@ def Start():
         if left:
             leftClicking = True
             if STRT.clicked == True:
-                menuVibe.pause()
+                menuVibe.stop()
                 music.play(villageMusic, -1)
                 sound.play(villageSound, -1)
                 break
@@ -1012,12 +1028,11 @@ while run:
 
             if event.key == pygame.K_SPACE:
                 print('Space Bar Pressed')
-                Menu()
+                MenuScreen()
 
             if event.key == pygame.K_LSHIFT:# IF LSHFT HELD: 'SPRINT MOVEMENT'
                 print('shift Pressed')
                 sirius.shift = True
-
 
         # KEY UP
         if event.type == pygame.KEYUP:
@@ -1049,7 +1064,6 @@ while run:
             if event.key == pygame.K_LSHIFT:
                 print('shift released')
                 sirius.shift = False
-
 
         # MOUSE EVENT DETECTION
 
