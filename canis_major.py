@@ -217,7 +217,7 @@ class Armor(pygame.sprite.Sprite):
 
 
 dagger = Weapon('Dagger', 'A trusty companion to any cut-throat...',pygame.transform.scale(pygame.image.load('graphics/SiriusDaggers.png').convert_alpha(), (66, 66)), 'Slash', 3, None)
-
+'Dagger' == dagger
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 class Player(pygame.sprite.Sprite):
@@ -682,9 +682,10 @@ def MenuScreen():
 
 def Battle(atkr, dfndr):
 
+
     music.pause()
     sound.pause()
-    battle.play(battleMusic, -1)
+    #battle.play(battleMusic, -1)
 
     basicFont = pygame.font.SysFont(None, 66, italic = True)
     
@@ -798,7 +799,7 @@ def Battle(atkr, dfndr):
         if dfndrText == True:######## PUT INTO SINGLE MULTI-USE FUNCTION
 
             if messageTimer >= 0:
-                messageToScreen(f'Showing Text', 400, 400)
+                messageToScreen(f"{dfndr.stats['name']} attacks {atkr.name} for {''} damage!", 500, 600)
 
             else:
                 messageTimer = 300
@@ -854,14 +855,11 @@ def Battle(atkr, dfndr):
         clock.tick(60)
 
 def Start():
-    global siriusSprite
-
-    up1 = pygame.transform.scale(pygame.image.load('graphics/up1.png').convert_alpha(), (96,96))
 
     menuVibe.play(menuMusic, -1)
 
-    STRT = Button('Click To Begin', 250, 75, (300, 390), (255,255,255),(123,123,255), pygame.transform.scale(pygame.image.load('graphics/startImage.png'), (250, 150)))
-    SET = Button('Settings', 200, 75, (300, 500), (255,255,255),(123,123,255), pygame.transform.scale(pygame.image.load('graphics/optionsImage.png'), (250, 100)))
+    STRT = Button('Click To Begin', 250, 50, (300, 390), (255,255,255),(123,123,255), pygame.transform.scale(pygame.image.load('graphics/startImage.png'), (250, 150)))
+    SET = Button('Settings', 230, 75, (300, 500), (255,255,255),(123,123,255), pygame.transform.scale(pygame.image.load('graphics/optionsImage.png'), (275, 100)))
     
     start = True
     while start:
@@ -901,10 +899,6 @@ def Start():
         SET.draw()
         SET.checkClick()
 
-        sirius.image = up1
-        siriusSprite.draw(screen)
-        sirius.rect.center = (333, 666)
-
         pygame.display.update()
         clock.tick(60)
 
@@ -939,8 +933,9 @@ def SETTINGS():
             elif volDown.clicked == True:
                 menuMusic.set_volume(menuMusic.get_volume()-.01)
 
-            #else:
+            else:
                 #print('Left Button Clicked')
+                leftClicking = False
 
         volUp.draw()
         volUp.checkClick()
